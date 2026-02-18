@@ -1,8 +1,8 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/GHGA/qc/master/assets/schema_input.json",
-    "title": "ghga-de/qcmetrics pipeline - params.input schema",
-    "description": "Schema for the file provided with params.input",
+    "title": "ghga_de qcmetrics pipeline params input schema",
+    "description": "Schema for the file provided with params input",
     "type": "array",
     "items": {
         "type": "object",
@@ -10,8 +10,53 @@
             "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "errorMessage": "Sample ID must be provided and cannot contain spaces",
                 "meta": ["id"]
+            },
+            "individual_id": {
+                "type": "string",
+                "errorMessage": "Individual ID cannot contain spaces",
+                "meta": ["individual_id"]
+            },
+            "sex": {
+                "errorMessage": "Sex cannot contain spaces",
+                "meta": ["sex"],
+                "default": "NA",
+                "type": "string",
+                "pattern": "^\\S+$"
+            },
+            "phenotype": {
+                "type": "string",
+                "meta": ["phenotype"]
+            },
+            "sample_type": {
+                "type": "string",
+                "meta": ["sample_type"]
+            },
+            "disease_status": {
+                "type": "string",
+                "meta": ["disease_status"]
+            },
+            "case_control_status": {
+                "type": "string",
+                "meta": ["case_control_status"]
+            },
+            "tissue": {
+                "type": "string",
+                "meta": ["tissue"]
+            },
+            "experiment_method": {
+                "type": "string",
+                "meta": ["experiment_method"]
+            },
+            "analysis_method": {
+                "type": "string",
+                "meta": ["analysis_method"]
+            },
+            "data_files": {
+                "type": "string",
+                "errorMessage": "Data files must be provided",
+                "meta": ["data_files"]
             },
             "fastq_1": {
                 "type": "string",
@@ -26,13 +71,6 @@
                 "exists": true,
                 "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
                 "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
-            },
-            "sex": {
-                "errorMessage": "Sex cannot contain spaces",
-                "meta": ["sex"],
-                "default": "NA",
-                "type": "string",
-                "pattern": "^\\S+$"
             },
             "status": {
                 "type": "integer",
@@ -88,17 +126,12 @@
             }
         },
         "oneOf": [
-            { "required": ["fastq_1"], "not": { "required": ["bam", "cram", "vcf"] } },
-            { "required": ["bam"], "not": { "required": ["fastq_1", "cram", "vcf"] } },
-            { "required": ["cram"], "not": { "required": ["fastq_1", "vcf", "bam"] } },
-            { "required": ["vcf"], "not": { "required": ["fastq_1", "cram", "bam"] } }
+            { "required": ["fastq_1"], "not": { "required": ["bam", "cram", "vcf", "data_files"] } },
+            { "required": ["bam"], "not": { "required": ["fastq_1", "cram", "vcf", "data_files"] } },
+            { "required": ["cram"], "not": { "required": ["fastq_1", "vcf", "bam", "data_files"] } },
+            { "required": ["vcf"], "not": { "required": ["fastq_1", "cram", "bam", "data_files"] } },
+            { "required": ["data_files"], "not": { "required": ["fastq_1", "cram", "bam", "vcf"] } }
         ],
-        "dependentRequired": {
-            "fastq_2": ["fastq_1"],
-            "bam": ["single_end"],
-            "cram": ["single_end"]
-        },
-        "required": ["sample"],
-        "uniqueEntries": ["lane", "sample"]
+        "required": ["sample"]
     }
 }

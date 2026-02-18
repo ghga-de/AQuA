@@ -1,0 +1,5 @@
+sample,lane,individual_id,sex,status,phenotype,sample_type,disease_status,case_control_status,tissue,experiment_method,analysis_method,fastq_1,fastq_2,single_end,bam,bai,cram,crai,vcf,data_files
+ERR188383,L1,ind_ERR188383,NA,0,RNA_Analysis,TOTAL_RNA,HEALTHY,CONTROL,blood,rna,,,,false,https://raw.githubusercontent.com/nf-core/test-datasets/rnasplice/testdata/ERR188383.Aligned.out.bam,,,,,
+ERR188428,L1,ind_ERR188428,NA,0,RNA_Analysis,TOTAL_RNA,HEALTHY,CONTROL,blood,rna,,,,false,https://raw.githubusercontent.com/nf-core/test-datasets/rnasplice/testdata/ERR188428.Aligned.out.bam,,,,,,
+ERR188454,L1,ind_ERR188454,NA,1,RNA_Analysis,TOTAL_RNA,DISEASE,CASE,blood,rna,,,,false,https://raw.githubusercontent.com/nf-core/test-datasets/rnasplice/testdata/ERR188454.Aligned.out.bam,,,,,,
+ERR204916,L1,ind_ERR204916,NA,1,RNA_Analysis,TOTAL_RNA,DISEASE,CASE,blood,rna,,,,false,https://raw.githubusercontent.com/nf-core/test-datasets/rnasplice/testdata/ERR204916.Aligned.out.bam,,,,,,

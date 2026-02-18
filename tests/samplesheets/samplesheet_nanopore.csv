@@ -1,0 +1,3 @@
+sample,lane,individual_id,sex,status,phenotype,sample_type,disease_status,case_control_status,tissue,experiment_method,analysis_method,fastq_1,fastq_2,single_end,bam,bai,cram,crai,vcf,data_files
+MCF7,L1,ind_MCF7,NA,0,Nanopore_cDNA,TOTAL_RNA,HEALTHY,CONTROL,cell_line,nanopore,,https://raw.githubusercontent.com/nf-core/test-datasets/nanoseq/fastq/demultiplexed/quantification/stringtie/MCF7_directcDNA_replicate1.fastq.gz,,true,,,,,,
+MCF7,L2,ind_MCF7,NA,0,Nanopore_cDNA,TOTAL_RNA,HEALTHY,CONTROL,cell_line,nanopore,,https://raw.githubusercontent.com/nf-core/test-datasets/nanoseq/fastq/demultiplexed/quantification/stringtie/MCF7_directcDNA_replicate3.fastq.gz,,true,,,,,,

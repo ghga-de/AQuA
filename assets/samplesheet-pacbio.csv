@@ -1,3 +1,0 @@
-sample,fastq_1,bam,single_end
-ccs_fastq,https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/pacbio/fastq/alz.ccs.fastq.gz,,,
-ccs_bam,,https://raw.githubusercontent.com/nf-core/test-datasets/modules/data/genomics/homo_sapiens/pacbio/bam/alz.ccs.bam,true

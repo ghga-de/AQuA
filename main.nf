@@ -1,11 +1,4 @@
 #!/usr/bin/env nextflow
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ghga-de/qcmetrics
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Github : https://github.com/ghga-de/qcmetrics
-----------------------------------------------------------------------------------------
-*/
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,17 +16,7 @@ params.bed12     = getGenomeAttribute('bed12')
 include { QCMETRICS               } from './workflows/qcmetrics'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_qc_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_qc_pipeline'
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    GENOME PARAMETER VALUES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
-
-// TODO nf-core: Remove this line if you don't need a FASTA file
-//   This is an example of how to use getGenomeAttribute() to fetch parameters
-//   from igenomes.config using `--genome`
-
+include { METADATA_TO_SAMPLESHEET } from './modules/local/metadata_to_samplesheet'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -69,6 +52,22 @@ workflow GHGA_QCMETRICS {
 workflow {
 
     main:
+
+    if (!params.input && !params.metadata) {
+        error("Please provide a valid --input file ending in .csv or --metadata ending in .json")
+    }
+
+    def ch_input
+
+    if (params.metadata) {
+        METADATA_TO_SAMPLESHEET (
+            Channel.fromPath(params.metadata, checkIfExists: true)
+        )
+        ch_input = METADATA_TO_SAMPLESHEET.out.samplesheet
+    } else {
+        ch_input = Channel.fromPath(params.input, checkIfExists: true)
+    }
+
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
@@ -78,7 +77,7 @@ workflow {
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        ch_input
     )
 
     //

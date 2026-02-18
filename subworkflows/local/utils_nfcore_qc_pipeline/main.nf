@@ -30,7 +30,7 @@ workflow PIPELINE_INITIALISATION {
     monochrome_logs   // boolean: Do not use coloured log outputs
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
-    input             //  string: Path to input samplesheet
+    input             // channel: Path to input samplesheet
 
     main:
 
@@ -68,32 +68,30 @@ workflow PIPELINE_INITIALISATION {
     validateInputParameters()
 
     //
-    // Create channel from input file provided through params.input
+    // Create channel from input file provided through params.input or metadata conversion
     //
+    input
+        .flatMap { samplesheet_file ->
+            samplesheetToList(samplesheet_file, "${projectDir}/assets/schema_input.json")
+        }
+        .map { meta, fastq_1, fastq_2, cram, crai, bam, bai, vcf ->
+            if (fastq_1) {
+                if (fastq_2) {
+                    return [ meta + [single_end:false, step:1 ], [ fastq_1, fastq_2 ] ]
+                } else {
+                    return [ meta + [single_end:true, step:1 ], [ fastq_1 ] ]
+                }
+            }
+            else if (cram) {
+                return [ meta + [ step:2 ], cram, crai ]
+            }
+            else if (bam) {
+                return [ meta + [ step:2 ], bam, bai ]
 
-Channel
-        .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2, cram, crai, bam, bai, vcf  ->
-                if (fastq_1){
-                    if (fastq_2) {
-                        return [ meta + [single_end:false, step:1 ], [ fastq_1, fastq_2 ] ]
-                    } else {
-                        return [ meta + [single_end:true, step:1 ], [ fastq_1 ] ]
-                    }
-                }
-                else if (cram){
-                    return [ meta + [ step:2 ], cram, crai ]
-                }
-                else if (bam){
-                    if (params.method in ["wgs", "wes", "tes"]){
-                        return [ meta + [ step:2 ], bam, bai ]
-                    }
-                    else{
-                        return [ meta + [ step:2 ], bam ]
-                    }
-                }
-                else return [ meta + [ step:3 ], vcf ]
+            }
+            else {
+                return [ meta + [ step:3 ], vcf ]
+            }
         }
         .set { ch_samplesheet }
 
@@ -113,7 +111,7 @@ workflow PIPELINE_COMPLETION {
     take:
     email           //  string: email address
     email_on_fail   //  string: email address sent on pipeline failure
-    plaintext_email // boolean: Send plain-text email instead of HTML
+    plaintext_email // boolean: Send plain text email instead of HTML
     outdir          //    path: Path to output directory where results will be published
     monochrome_logs // boolean: Disable ANSI colour codes in log output
     multiqc_report  //  string: Path to MultiQC report
@@ -159,20 +157,6 @@ def validateInputParameters() {
 }
 
 //
-// Validate channels from input samplesheet
-//
-def validateInputSamplesheet(input) {
-    def (metas, fastqs) = input[1..2]
-
-    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
-    def endedness_ok = metas.collect{ meta -> meta.single_end }.unique().size == 1
-    if (!endedness_ok) {
-        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
-    }
-
-    return [ metas[0], fastqs ]
-}
-//
 // Get attribute from genome config file e.g. fasta
 //
 def getGenomeAttribute(attribute) {
@@ -201,9 +185,6 @@ def genomeExistsError() {
 // Generate methods description for MultiQC
 //
 def toolCitationText() {
-    // TODO nf-core: Optionally add in-text citation tools to this list.
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
     def citation_text = [
             "Tools used in the workflow included:",
             "FastQC (Andrews 2010),",
@@ -215,9 +196,6 @@ def toolCitationText() {
 }
 
 def toolBibliographyText() {
-    // TODO nf-core: Optionally add bibliographic entries to this list.
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
     def reference_text = [
             "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).</li>",
             "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"
@@ -227,16 +205,11 @@ def toolBibliographyText() {
 }
 
 def methodsDescriptionText(mqc_methods_yaml) {
-    // Convert  to a named map so can be used as with familiar NXF ${workflow} variable syntax in the MultiQC YML file
     def meta = [:]
     meta.workflow = workflow.toMap()
     meta["manifest_map"] = workflow.manifest.toMap()
 
-    // Pipeline DOI
     if (meta.manifest_map.doi) {
-        // Using a loop to handle multiple DOIs
-        // Removing `https://doi.org/` to handle pipelines using DOIs vs DOI resolvers
-        // Removing ` ` since the manifest.doi is a string and not a proper list
         def temp_doi_ref = ""
         def manifest_doi = meta.manifest_map.doi.tokenize(",")
         manifest_doi.each { doi_ref ->
@@ -246,17 +219,10 @@ def methodsDescriptionText(mqc_methods_yaml) {
     } else meta["doi_text"] = ""
     meta["nodoi_text"] = meta.manifest_map.doi ? "" : "<li>If available, make sure to update the text to include the Zenodo DOI of version of the pipeline used. </li>"
 
-    // Tool references
     meta["tool_citations"] = ""
     meta["tool_bibliography"] = ""
 
-    // TODO nf-core: Only uncomment below if logic in toolCitationText/toolBibliographyText has been filled!
-    // meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
-    // meta["tool_bibliography"] = toolBibliographyText()
-
-
     def methods_text = mqc_methods_yaml.text
-
     def engine =  new groovy.text.SimpleTemplateEngine()
     def description_html = engine.createTemplate(methods_text).make(meta)
 
