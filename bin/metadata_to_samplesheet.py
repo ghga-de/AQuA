@@ -8,10 +8,13 @@ Key entities and how they map to samplesheet columns:
 
   Individual        --> individual_id, sex, phenotype
   Sample            --> sample, status, case_control_status, tissue, sample_type, disease_status
-  ExperimentMethod  --> method (via instrument_model + library_type), single_end, experiment_method
+  ExperimentMethod  --> experiment_method (normalised: "wgs", "pacbio", …),
+                        experiment_method_alias (original alias, for traceability),
+                        single_end
   Experiment        --> links Sample ↔ ExperimentMethod ↔ ResearchDataFiles
   ResearchDataFile  --> fastq_1, fastq_2  (raw FASTQ/FAST5; sorted by technical_replicate)
-  Analysis          --> analysis_method; bridges Experiments ↔ ProcessDataFiles
+  Analysis          --> analysis_method (normalised), analysis_method_alias;
+                        bridges Experiments ↔ ProcessDataFiles
   ProcessDataFile   --> bam/bai, cram/crai, vcf  (linked via Analysis)
 
 ProcessDataFile linkage chain:
@@ -67,6 +70,19 @@ def get_method(exp_method: dict) -> str:
     return LIBRARY_TYPE_MAP.get(library_type, "wgs")
 
 
+def get_analysis_method(analysis_method_record: dict) -> str:
+    """
+    Resolve a normalised pipeline method name from an AnalysisMethod record.
+    Uses the 'type' field, mapped through LIBRARY_TYPE_MAP for consistency with
+    get_method (e.g. 'cfDNA' stays as-is when not in the map, lowercased).
+    Falls back to 'unknown' when the record is absent.
+    """
+    if not analysis_method_record:
+        return "unknown"
+    ana_type = analysis_method_record.get("type", "")
+    return LIBRARY_TYPE_MAP.get(ana_type, ana_type.lower() or "unknown")
+
+
 def get_single_end(exp_method: dict) -> str:
     """
     Derive single_end flag from ExperimentMethod.sequencing_layout.
@@ -114,12 +130,12 @@ def build_indices(metadata: dict) -> dict:
         if exp.get("alias")
     }
 
-    ### sample --> experiment (first match wins; one sample = one experiment in GHGA)
-    sample_to_experiment: dict[str, dict] = {}
+    ### sample --> experiments (all experiments; a sample may have multiple sequencing runs)
+    sample_to_experiments: dict[str, list] = {}
     for exp in metadata.get("experiments", []):
         sample_ref = exp.get("sample")
-        if sample_ref and sample_ref not in sample_to_experiment:
-            sample_to_experiment[sample_ref] = exp
+        if sample_ref:
+            sample_to_experiments.setdefault(sample_ref, []).append(exp)
 
     ### experiment --> ResearchDataFiles (list)
     exp_to_rdfs: dict[str, list] = {}
@@ -134,6 +150,13 @@ def build_indices(metadata: dict) -> dict:
         if rdf_alias:
             rdf_alias_to_experiments[rdf_alias] = _as_list(rdf.get("experiments"))
 
+    ### analysis_methods: alias --> record
+    analysis_methods = {
+        am["alias"]: am
+        for am in metadata.get("analysis_methods", [])
+        if am.get("alias")
+    }
+
     ### analyses: alias --> record
     analyses = {
         ana["alias"]: ana
@@ -141,14 +164,15 @@ def build_indices(metadata: dict) -> dict:
         if ana.get("alias")
     }
 
-    ### experiment --> Analysis (via RDF membership)
+    ### experiment --> analyses (all analyses linked via RDF membership;
+    ### an experiment may be re-analysed multiple times)
     ### Analysis.research_data_files --> list of RDF aliases --> each RDF --> experiments
-    exp_to_analysis: dict[str, dict] = {}
+    exp_to_analyses: dict[str, list] = {}
     for ana in metadata.get("analyses", []):
         for rdf_alias in _as_list(ana.get("research_data_files")):
             for exp_alias in rdf_alias_to_experiments.get(rdf_alias, []):
-                if exp_alias not in exp_to_analysis:
-                    exp_to_analysis[exp_alias] = ana
+                if ana not in exp_to_analyses.get(exp_alias, []):
+                    exp_to_analyses.setdefault(exp_alias, []).append(ana)
 
     ### ProcessDataFiles: analysis alias --> list of process files 
     ### (ProcessDataFile links to Analysis, not directly to Experiment)
@@ -159,14 +183,15 @@ def build_indices(metadata: dict) -> dict:
             analysis_to_pdfs.setdefault(ana_ref, []).append(pdf)
 
     return {
-        "individuals":          individuals,
-        "exp_methods":          exp_methods,
-        "experiments":          experiments,
-        "sample_to_experiment": sample_to_experiment,
-        "exp_to_rdfs":          exp_to_rdfs,
-        "exp_to_analysis":      exp_to_analysis,
-        "analysis_to_pdfs":     analysis_to_pdfs,
-        "analyses":             analyses,
+        "individuals":           individuals,
+        "exp_methods":           exp_methods,
+        "experiments":           experiments,
+        "sample_to_experiments": sample_to_experiments,
+        "exp_to_rdfs":           exp_to_rdfs,
+        "exp_to_analyses":       exp_to_analyses,
+        "analysis_to_pdfs":      analysis_to_pdfs,
+        "analyses":              analyses,
+        "analysis_methods":      analysis_methods,
     }
 
 
@@ -227,17 +252,33 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
 
     return buckets
 
-
-def buckets_to_rows(buckets: dict[str, list], single_end: str) -> list[dict]:
+def buckets_to_rows(
+    buckets: dict[str, list],
+    single_end: str,
+    warnings: list[str],
+    context: str = "",
+) -> list[dict] | None:
     """
     Expand classified file buckets into one or more file-row dicts.
     Each row carries exactly one file type (FASTQ pair, BAM+BAI, CRAM+CRAI, or VCF).
+
+    Returns None when no files exist in any bucket so the caller can skip the
+    sample entirely rather than writing an unusable metadata-only row.
+
+    single_end is derived from metadata (sequencing_layout) and is never
+    overridden based on file presence.  When a paired-end experiment is missing
+    its R2 file a warning is appended to `warnings` so the caller can surface it
+    rather than silently treating the read as single-end.
     """
     file_rows = []
 
     for f1, f2 in zip_longest(buckets["fastq_1"], buckets["fastq_2"]):
-        se = "true" if not f2 else single_end
-        file_rows.append({"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": se})
+        if not f2 and single_end == "false":
+            warnings.append(
+                f"[{context}] PE experiment is missing fastq_2 for fastq_1={f1!r}; "
+                "single_end kept as 'false' from metadata — check for missing R2 file."
+            )
+        file_rows.append({"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": single_end})
 
     for bam, bai in zip_longest(buckets["bam"], buckets["bai"]):
         file_rows.append({"bam": bam or "", "bai": bai or "", "single_end": single_end})
@@ -251,8 +292,10 @@ def buckets_to_rows(buckets: dict[str, list], single_end: str) -> list[dict]:
     if buckets["other"] and not file_rows:
         file_rows.append({"data_files": ";".join(buckets["other"]), "single_end": single_end})
 
+    # Return None when no files were found so the caller can skip the row
+    # rather than writing a metadata-only row with no usable file inputs.
     if not file_rows:
-        file_rows.append({"single_end": single_end})
+        return None
 
     return file_rows
 
@@ -265,6 +308,7 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
         metadata = json.load(f)
 
     idx = build_indices(metadata)
+    warnings: list[str] = []
 
     rows = []
     for sample in metadata.get("samples", []):
@@ -288,48 +332,76 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
         status = 1 if ("tumor" in disease_raw or "disease" in disease_raw) else 0
 
         ### Experiment + ExperimentMethod
-        experiment    = idx["sample_to_experiment"].get(sample_alias, {})
-        exp_alias     = experiment.get("alias", "")
-        em_alias      = experiment.get("experiment_method", "")
-        exp_method    = idx["exp_methods"].get(em_alias, {})
-        single_end    = get_single_end(exp_method)
+        ### Iterate over every experiment for this sample so that multiple
+        ### sequencing runs are all represented in the samplesheet.
+        for experiment in idx["sample_to_experiments"].get(sample_alias, []):
+            exp_alias  = experiment.get("alias", "")
+            em_alias   = experiment.get("experiment_method", "")
+            exp_method = idx["exp_methods"].get(em_alias, {})
+            # Normalised method name for workflow detection (e.g. "pacbio", "wgs")
+            exp_method_name = get_method(exp_method)
+            single_end      = get_single_end(exp_method)
 
-        ###  Analysis (reached via Experiment --> ResearchDataFiles --> Analysis)
-        analysis      = idx["exp_to_analysis"].get(exp_alias, {})
-        analysis_alias = analysis.get("alias", "")
-        am_alias      = analysis.get("analysis_method", "")
+            ### ResearchDataFiles (raw reads) for this experiment
+            raw_files: list[dict] = list(idx["exp_to_rdfs"].get(exp_alias, []))
 
-        ### Collect all files for this experiment
-        all_files: list[dict] = []
+            ### Iterate over every analysis linked to this experiment.
+            ### Each analysis may produce different ProcessDataFiles and carry a
+            ### different analysis_method, so they expand into separate lane groups.
+            ### If there are no analyses, still emit the raw files on their own.
+            analyses_for_exp = idx["exp_to_analyses"].get(exp_alias, [])
+            analysis_loop = analyses_for_exp if analyses_for_exp else [{}]
 
-        ### ResearchDataFiles (raw reads)
-        all_files.extend(idx["exp_to_rdfs"].get(exp_alias, []))
+            for analysis in analysis_loop:
+                analysis_alias = analysis.get("alias", "")
+                am_alias       = analysis.get("analysis_method", "")
+                # Normalised analysis method name via AnalysisMethod.type
+                am_record      = idx["analysis_methods"].get(am_alias, {})
+                ana_method_name = get_analysis_method(am_record)
 
-        ### ProcessDataFiles (BAM/VCF) linked via Analysis
-        if analysis_alias:
-            all_files.extend(idx["analysis_to_pdfs"].get(analysis_alias, []))
+                all_files = list(raw_files)
+                if analysis_alias:
+                    all_files.extend(idx["analysis_to_pdfs"].get(analysis_alias, []))
 
-        buckets   = classify_files(all_files, input_directory)
-        file_rows = buckets_to_rows(buckets, single_end)
+                buckets   = classify_files(all_files, input_directory)
+                context   = f"{sample_alias}/{exp_alias}/{analysis_alias or 'no-analysis'}"
+                file_rows = buckets_to_rows(buckets, single_end, warnings, context)
 
-        ### Assemble one output row per file group
-        base = {
-            "sample":               sample_alias,
-            "individual_id":        individual_id,
-            "sex":                  sex,
-            "status":               status,
-            "phenotype":            phenotype,
-            "sample_type":          sample.get("type", ""),
-            "disease_status":       sample.get("disease_or_healthy", ""),
-            "case_control_status":  sample.get("case_control_status", ""),
-            "tissue":               sample.get("biospecimen_tissue_term", ""),
-            "experiment_method":    em_alias,
-            "analysis_method":      am_alias
-        }
+                if file_rows is None:
+                    warnings.append(
+                        f"[{context}] no files found in any bucket — "
+                        "skipping row to avoid writing a metadata-only entry."
+                    )
+                    continue
 
-        for lane_num, frow in enumerate(file_rows, start=1):
-            row = {**base, "lane": f"L{lane_num:03d}", **frow}
-            rows.append(row)
+                ### Assemble one output row per file group
+                base = {
+                    "sample":                   sample_alias,
+                    "individual_id":            individual_id,
+                    "sex":                      sex,
+                    "status":                   status,
+                    "phenotype":                phenotype,
+                    "sample_type":              sample.get("type", ""),
+                    "disease_status":           sample.get("disease_or_healthy", ""),
+                    "case_control_status":      sample.get("case_control_status", ""),
+                    "tissue":                   sample.get("biospecimen_tissue_term", ""),
+                    # Normalised method names for workflow/QC metric detection
+                    "experiment_method":        exp_method_name,
+                    "analysis_method":          ana_method_name,
+                    # Original aliases for traceability
+                    "experiment_method_alias":  em_alias,
+                    "analysis_method_alias":    am_alias,
+                }
+
+                for lane_num, frow in enumerate(file_rows, start=1):
+                    row = {**base, "lane": f"L{lane_num:03d}", **frow}
+                    rows.append(row)
+
+    if warnings:
+        import sys
+        print(f"\n{len(warnings)} validation warning(s):", file=sys.stderr)
+        for w in warnings:
+            print(f"  WARNING: {w}", file=sys.stderr)
 
     return rows
 
@@ -346,14 +418,24 @@ ALL_COLUMNS = [
     "bam", "bai", "cram", "crai", "vcf", "data_files",
 ]
 
+# Columns whose string value "true"/"false" must be written as a JSON boolean
+# to satisfy the schema's  "type": "boolean"  constraint on single_end.
+_BOOL_COLUMNS = {"single_end"}
+
 
 def write_samplesheet(rows: list[dict], output_path: str):
     with open(output_path, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=ALL_COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for row in rows:
-            # Fill any missing columns with empty string
-            writer.writerow({col: row.get(col, "") for col in ALL_COLUMNS})
+            out = {}
+            for col in ALL_COLUMNS:
+                val = row.get(col, "")
+                if col in _BOOL_COLUMNS and val != "":
+                    # Schema requires boolean, not the string "true"/"false"
+                    val = str(val).lower() == "true"
+                out[col] = val
+            writer.writerow(out)
 
 
 #############
