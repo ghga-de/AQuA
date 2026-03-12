@@ -256,7 +256,6 @@ def buckets_to_rows(buckets: dict[str, list], single_end: str) -> list[dict]:
 
     return file_rows
 
-
 #########################
 #####  Main parser  #####
 #########################
@@ -293,7 +292,6 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
         exp_alias     = experiment.get("alias", "")
         em_alias      = experiment.get("experiment_method", "")
         exp_method    = idx["exp_methods"].get(em_alias, {})
-        method        = get_method(exp_method)
         single_end    = get_single_end(exp_method)
 
         ###  Analysis (reached via Experiment --> ResearchDataFiles --> Analysis)
@@ -326,8 +324,7 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
             "case_control_status":  sample.get("case_control_status", ""),
             "tissue":               sample.get("biospecimen_tissue_term", ""),
             "experiment_method":    em_alias,
-            "analysis_method":      am_alias,
-            "method":               method,
+            "analysis_method":      am_alias
         }
 
         for lane_num, frow in enumerate(file_rows, start=1):
@@ -344,7 +341,7 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 ALL_COLUMNS = [
     "sample", "lane", "individual_id", "sex", "status", "phenotype",
     "sample_type", "disease_status", "case_control_status", "tissue",
-    "experiment_method", "analysis_method", "method",
+    "experiment_method", "analysis_method",
     "fastq_1", "fastq_2", "single_end",
     "bam", "bai", "cram", "crai", "vcf", "data_files",
 ]
@@ -371,15 +368,14 @@ if __name__ == "__main__":
         epilog=__doc__,
     )
     parser.add_argument(
-        "--metadata", required=True,
-        help="Path to GHGA metadata.json"
+        "metadata", help="Path to GHGA metadata.json"
     )
     parser.add_argument(
         "--output", default="samplesheet.csv",
         help="Output CSV path (default: samplesheet.csv)"
     )
     parser.add_argument(
-        "--input-directory", default="",
+        "--input_directory", default="",
         help="Optional prefix directory prepended to all file names in the output"
     )
     args = parser.parse_args()
