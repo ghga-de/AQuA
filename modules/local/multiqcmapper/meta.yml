@@ -1,6 +1,6 @@
 name: "multiqcmapper"
-  description: Normalize MultiQC metrics across tools into a unified long-format table
-  keywords:
+description: Normalize MultiQC metrics across tools into a unified long-format table
+keywords:
     - qc
     - multiqc
     - metrics
