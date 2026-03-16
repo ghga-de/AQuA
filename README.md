@@ -39,33 +39,73 @@ The following table details which tools are executed based on the analysis metho
 
 ## Usage
 
-### 1. Prepare Samplesheet
+The pipeline can be started in two ways: by providing a manual samplesheet or by providing GHGA-compliant metadata.
+
+### Option A: Manual Samplesheet (CSV)
+
+Create a samplesheet.csv with your data. The pipeline auto-detects the starting step based on which columns are populated.
 
 You must create a `samplesheet.csv` containing your input data. The structure requires a `step` column to tell the pipeline which type of file you are providing:
 * **step 1**: FastQ files (Read QC)
 * **step 2**: BAM/CRAM files (Alignment QC)
 * **step 3**: VCF files (Variant QC)
 
-**Example `samplesheet.csv`:**
+A samplesheet containing a mix of raw data, mapped bams, and variant files would look like this:
 
-```csv
-sample,fastq_1,fastq_2,bam,vcf
-SAMPLE_A,read1.fq.gz,read2.fq.gz,,
-SAMPLE_A,read1.fq.gz,read2.fq.gz,,
-SAMPLE_B,read1.fq.gz,,,
-SAMPLE_C,,,aligned.bam,
-SAMPLE_D,,,,variants.vcf.gz
+```csv title="samplesheet.csv"
+sample,lane,individual_id,sex,experiment_method,fastq_1,fastq_2,bam,bai,vcf
+SAMPLE_FASTQ,L001,ind_1,MALE,wgs,s1_R1.fastq.gz,s1_R2.fastq.gz,,,
+SAMPLE_BAM,L001,ind_2,FEMALE,wgs,,,s2.bam,s2.bam.bai,
+SAMPLE_VCF,L001,ind_3,NA,wgs,,,,,s3.vcf.gz
 ```
+
+| Column | Description |
+| :--- | :--- |
+| `sample` | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
+| `lane` | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces. |
+| `individual_id` | Identifier for the individual (patient/subject). |
+| `sex` | Biological sex of the individual (e.g., MALE, FEMALE, NA). |
+| `status` | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case). |
+| `phenotype` | Phenotypic terms or descriptions associated with the individual. |
+| `sample_type` | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA). |
+| `disease_status` | Text description of the disease status (e.g., Healthy, Tumor). |
+| `case_control_status` | Status in the study design (e.g., CASE, CONTROL). |
+| `tissue` | The source tissue of the specimen (e.g., blood, tissue). |
+| `experiment_method` | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`. |
+| `analysis_method` | The type of analysis performed (e.g., `varcall`). |
+| `fastq_1` | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`. |
+| `fastq_2` | Path to the Read 2 FastQ file for paired-end data. Optional for single-end. |
+| `single_end` | Boolean (`true`/`false`) indicating if the sequencing is single-end. |
+| `bam` | Path to the aligned BAM file. |
+| `bai` | Path to the corresponding BAM index file. |
+| `cram` | Path to the aligned CRAM file. |
+| `crai` | Path to the corresponding CRAM index file. |
+| `vcf` | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`. |
+| `data_files` | Semicolon-separated list of any other relevant data files not covered by specific columns. |
+
+An [example samplesheet](../tests/samplesheets/samplesheet.csv) has been provided with the pipeline.
+
+
+### Option B: GHGA Metadata (JSON)
+
+If you already have a metadata.json following the GHGA metadata model, you can provide it directly. The pipeline will automatically convert the JSON into the required internal format, eliminating the need to create a manual samplesheet.
 
 ### 2. Run the Pipeline
 
-Run the pipeline using the command below. Ensure you specify the correct method (e.g., `wgs`, `rna`, `wes`) so the pipeline loads the correct tools.
+Run the pipeline using the command below with input samplesheet.csv.
 
 ```bash
 nextflow run main.nf \
    -profile docker/singularity/conda \
    --input samplesheet.csv \
-   --method wgs \
+   --outdir ./results
+```
+or using the command below with input metadata.json.
+
+```bash
+nextflow run main.nf \
+   -profile docker/singularity/conda \
+   --metadata metadata.json \
    --outdir ./results
 ```
 
@@ -99,7 +139,7 @@ nextflow run main.nf \
 
 GHGA AQuA nextflow pipeline was originally written by Kubra Narci @kubranarci. 
 
-The team members who assists and develops the pipeline:
+Current development team:
     - Manuel Kösters
     - Virag Sharma
     - Ruchi Tanavade 

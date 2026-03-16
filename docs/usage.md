@@ -4,15 +4,24 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+The ghga-de/aqua pipeline is designed for comprehensive quality control of genomic and transcriptomic data. It supports multiple input formats, including raw sequencing reads (FASTQ) and aligned sequences (BAM/CRAM), as well as variant calls (VCF). The pipeline adaptively selects QC tools based on the input type and sequencing method specified in the samplesheet.
+
+## Metadata JSON input 
+If you are a GHGA user, you can also provide a metadata JSON file directly. The pipeline will automatically convert this into the required samplesheet format:
+
+```bash
+nextflow run main.nf --metadata ./metadata.json --outdir ./results -profile docker
+```
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
+
+The samplesheet is a comma-separated (CSV) file. While the pipeline is flexible, every row must contain at least a sample name and exactly one type of data input (FASTQ pair, BAM, CRAM, or VCF).
 
 ### Multiple runs of the same sample
 
@@ -25,37 +34,66 @@ CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
 CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
 ```
 
+## Flexible Data Inputs
+
+The pipeline supports three primary "steps" or entry points based on the files provided:
+1. Raw Reads (Step 1): Provide fastq_1 (and optionally fastq_2).
+2. Alignments (Step 2): Provide bam and bai (or cram and crai).
+3. Variants (Step 3): Provide vcf.
+
+## Entry Points and Parameters
+
+The pipeline adjusts its behavior based on the content of your samplesheet:
+
+WGS/WXS: Runs Picard, Samtools, and Mosdepth.
+
+RNA-Seq: Runs RSeQC and Picard RNA metrics.
+
+Long-reads: If experiment_method is nanopore or pacbio, specialized tools like NanoPlot or FastpLong are triggered.
+
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+A samplesheet containing a mix of raw data, mapped bams, and variant files would look like this:
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+sample,lane,individual_id,sex,experiment_method,fastq_1,fastq_2,bam,bai,vcf
+SAMPLE_FASTQ,L001,ind_1,MALE,wgs,s1_R1.fastq.gz,s1_R2.fastq.gz,,,
+SAMPLE_BAM,L001,ind_2,FEMALE,wgs,,,s2.bam,s2.bam.bai,
+SAMPLE_VCF,L001,ind_3,NA,wgs,,,,,s3.vcf.gz
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column | Description |
+| :--- | :--- |
+| `sample` | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
+| `lane` | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces. |
+| `individual_id` | Identifier for the individual (patient/subject). |
+| `sex` | Biological sex of the individual (e.g., MALE, FEMALE, NA). |
+| `status` | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case). |
+| `phenotype` | Phenotypic terms or descriptions associated with the individual. |
+| `sample_type` | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA). |
+| `disease_status` | Text description of the disease status (e.g., Healthy, Tumor). |
+| `case_control_status` | Status in the study design (e.g., CASE, CONTROL). |
+| `tissue` | The source tissue of the specimen (e.g., blood, tissue). |
+| `experiment_method` | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`. |
+| `analysis_method` | The type of analysis performed (e.g., `varcall`). |
+| `fastq_1` | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`. |
+| `fastq_2` | Path to the Read 2 FastQ file for paired-end data. Optional for single-end. |
+| `single_end` | Boolean (`true`/`false`) indicating if the sequencing is single-end. |
+| `bam` | Path to the aligned BAM file. |
+| `bai` | Path to the corresponding BAM index file. |
+| `cram` | Path to the aligned CRAM file. |
+| `crai` | Path to the corresponding CRAM index file. |
+| `vcf` | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`. |
+| `data_files` | Semicolon-separated list of any other relevant data files not covered by specific columns. |
 
-An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+An [example samplesheet](../tests/samplesheets/samplesheet.csv) has been provided with the pipeline.
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run main.nf --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run main.nf --input ./samplesheet.csv --outdir ./results --genome GRCh38 -profile singularity
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
