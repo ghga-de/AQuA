@@ -1,0 +1,35 @@
+name: "multiqcmapper"
+description: Normalize MultiQC metrics across tools into a unified long-format table
+keywords:
+    - qc
+    - multiqc
+    - metrics
+    - normalization
+  tools:
+    - multiqc-mapper:
+        description: Maps MultiQC (anchor, metric) pairs to canonical concept names
+        homepage: "https://github.com/MKoesters/multiqc-mapper"
+        licence: ["MIT"]
+
+  input:
+    - multiqc_data_dir:
+        type: directory
+        description: MultiQC data directory containing multiqc.parquet
+    - concepts_yaml:
+        type: file
+        description: YAML file mapping canonical concepts to tool-specific metrics
+        pattern: "*.{yml,yaml}"
+
+  output:
+    - unified:
+        - "unified.tsv":
+            type: file
+            description: Unified long-format table of harmonized QC metrics
+            pattern: "*.tsv"
+    - versions:
+        - "versions.yml":
+            type: file
+            description: Software version
+
+  authors:
+    - "@MKoesters"

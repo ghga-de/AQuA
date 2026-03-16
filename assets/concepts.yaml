@@ -1,0 +1,615 @@
+# multiqc_mapper — concepts.yaml
+# ================================
+# Canonical concept registry for MultiQC metric normalization.
+#
+# Structure:
+#   concepts:
+#     <concept_key>:          # snake_case, tool-agnostic name
+#       title: ...            # human-readable display name
+#       description: ...      # what this measures
+#       unit: ...             # measurement unit
+#       category: ...         # grouping (alignment, coverage, quality, ...)
+#       shared_key: ...       # MultiQC shared_key (unit-level hint)
+#       notes: ...            # caveats about cross-tool differences
+#       sources:              # one entry per tool that reports this concept
+#         - anchor: ...       # MultiQC anchor (plot/table id) — used for matching
+#           metric: ...       # MultiQC metric key        — used for matching
+#           tool: ...         # human label (documentation only)
+#           section_key: ...  # MultiQC section_key (documentation only)
+#           namespace: ...    # MultiQC namespace (documentation only)
+#           title: ...        # original MultiQC column title (documentation only)
+#
+# Only `anchor` and `metric` under each source are used for resolution.
+# All other fields are documentation.
+#
+# To add a new tool: add a new entry under `sources:` for the relevant concept.
+# To add a new concept: add a new top-level key under `concepts:`.
+# Generated with: multiqc-mapper discover ./multiqc_data
+
+version: "1.0"
+generated_by: "multiqc-mapper discover (hand-curated)"
+multiqc_version: "1.33"
+
+
+concepts:
+
+  # =========================================================================
+  # ALIGNMENT — Read counts
+  # =========================================================================
+
+  total_reads:
+    title: "Total reads"
+    description: >
+      Total number of reads/records in the BAM file.
+      samtools counts raw sequences; RSeQC counts total BAM records.
+      These are semantically equivalent for most use cases.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    notes: >
+      samtools `raw_total_sequences` may include supplementary/secondary
+      alignments depending on flagstat settings. RSeQC `total_records` counts
+      all BAM records. Differences are expected to be small.
+    sources:
+      - anchor: samtools-stats-dp
+        metric: raw_total_sequences
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        namespace: "samtools stats: stats"
+        title: "Total sequences"
+        shared_key: read_count
+      - anchor: rseqc_bam_stat
+        metric: total_records
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        namespace: "RSeQC BAM stats: Bam Stat"
+        title: "Total records"
+        shared_key: read_count
+
+  reads_mapped_and_paired:
+    title: "Reads mapped and paired"
+    description: >
+      Reads where paired-end technology bit is set AND both mates are mapped.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_mapped_and_paired
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Mapped & paired"
+        description: "Paired-end technology bit set + both mates mapped"
+
+  properly_paired_reads:
+    title: "Properly paired reads"
+    description: >
+      Reads mapped in proper pairs — both mates aligned concordantly at the
+      expected orientation and distance. Reported by multiple tools with
+      different flag criteria.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    notes: >
+      samtools uses the SAM proper-pair flag (0x2).
+      RSeQC `reads_mapped_in_proper_pairs` uses the same flag.
+      These should be identical if the BAM is flagged consistently.
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_properly_paired
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Properly paired"
+        description: "Proper-pair bit set"
+        shared_key: read_count
+      - anchor: rseqc_bam_stat
+        metric: reads_mapped_in_proper_pairs
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Proper pairs"
+        description: "Reads mapped in proper pairs"
+        shared_key: read_count
+
+  properly_paired_percent:
+    title: "Properly paired reads (%)"
+    description: "Percentage of reads mapped in proper pairs."
+    unit: "%"
+    category: alignment
+    sources:
+      - anchor: general_stats_table
+        metric: proper_pairs_percent
+        section_key: rseqc
+        tool: rseqc
+        namespace: "RSeQC BAM stats: Bam Stat"
+        title: "Proper Pairs"
+        description: "% Reads mapped in proper pairs"
+
+  duplicate_reads:
+    title: "Duplicate reads"
+    description: >
+      Reads flagged as PCR or optical duplicates.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    notes: >
+      samtools counts reads with the duplicate bit (0x400) set.
+      RSeQC `optical_pcr_duplicate` also uses the BAM duplicate flag.
+      Values should be identical if the BAM is processed by the same
+      duplicate-marking tool (e.g. Picard MarkDuplicates).
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_duplicated
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Duplicated"
+        description: "PCR or optical duplicate bit set"
+        shared_key: read_count
+      - anchor: rseqc_bam_stat
+        metric: optical_pcr_duplicate
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Duplicates"
+        description: "Optical/PCR duplicate"
+        shared_key: read_count
+
+  qc_failed_reads:
+    title: "QC-failed reads"
+    description: >
+      Reads where the QC-fail flag (0x200) is set.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    notes: >
+      samtools `reads_QC_failed` and RSeQC `qc_failed` both use the same
+      SAM QC-fail flag. Values should be identical.
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_QC_failed
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "QC Failed"
+        shared_key: read_count
+      - anchor: rseqc_bam_stat
+        metric: qc_failed
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "QC failed"
+        shared_key: read_count
+
+  unmapped_reads:
+    title: "Unmapped reads"
+    description: "Reads that did not align to the reference genome."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: unmapped_reads
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Unmapped"
+        description: "Unmapped reads"
+        shared_key: read_count
+
+  reads_mapped_percent:
+    title: "Reads mapped (%)"
+    description: "Percentage of reads mapped to the reference from samtools stats."
+    unit: "%"
+    category: alignment
+    sources:
+      - anchor: general_stats_table
+        metric: reads_mapped_percent
+        section_key: samtools
+        tool: samtools
+        namespace: "samtools stats: stats"
+        title: "% Mapped"
+
+  non_primary_hits:
+    title: "Non-primary alignments"
+    description: >
+      Reads where the not-primary-alignment flag (0x100) is set.
+      These are secondary or supplementary alignments.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: non_primary_hits
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Non primary hit"
+        shared_key: read_count
+
+  reads_mq0:
+    title: "Reads with MAPQ=0"
+    description: "Reads with mapping quality equal to zero (ambiguously mapped)."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_MQ0
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Reads MQ0"
+        description: "Reads mapped and MQ=0"
+        shared_key: read_count
+
+  unique_reads:
+    title: "Unique reads (MAPQ filtered)"
+    description: >
+      Reads with MAPQ >= the mapq_cut threshold (uniquely mapped, by convention).
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: mapq_gte_mapq_cut_unique
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Unique"
+        description: "mapq >= mapq_cut (unique)"
+        shared_key: read_count
+
+  error_rate:
+    title: "Error rate"
+    description: "Per-base error rate estimated from samtools stats."
+    unit: "%"
+    category: alignment
+    sources:
+      - anchor: general_stats_table
+        metric: error_rate
+        section_key: samtools
+        tool: samtools
+        namespace: "samtools stats: stats"
+        title: "Error rate"
+        description: "Error rate from samtools stats"
+
+  # =========================================================================
+  # ALIGNMENT — Read orientation / pairs
+  # =========================================================================
+
+  pairs_on_different_chromosomes:
+    title: "Pairs on different chromosomes"
+    description: >
+      Pairs where the two mates map to different chromosomes (inter-chromosomal
+      pairs). Can indicate structural variation or mis-mapping.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    notes: >
+      samtools `pairs_on_different_chromosomes` counts all such pairs.
+      RSeQC `proper-paired_reads_map_to_different_chrom` counts only those
+      within the proper-pair set — these are NOT equivalent.
+    sources:
+      - anchor: samtools-stats-dp
+        metric: pairs_on_different_chromosomes
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Diff chromosomes"
+        description: "Pairs on different chromosomes"
+        shared_key: read_count
+
+  proper_pairs_different_chrom:
+    title: "Proper pairs on different chromosomes"
+    description: >
+      Proper-paired reads whose mates map to different chromosomes.
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: proper-paired_reads_map_to_different_chrom
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Different chrom"
+        description: "Proper-paired reads map to different chrom"
+        shared_key: read_count
+
+  pairs_with_other_orientation:
+    title: "Pairs with non-canonical orientation"
+    description: "Pairs that are neither inward nor outward oriented."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: pairs_with_other_orientation
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Other orientation"
+        shared_key: read_count
+
+  inward_oriented_pairs:
+    title: "Inward oriented pairs"
+    description: "Pairs where both mates face inward (FR orientation — normal for most libraries)."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: inward_oriented_pairs
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Inward pairs"
+        shared_key: read_count
+
+  outward_oriented_pairs:
+    title: "Outward oriented pairs"
+    description: "Pairs where both mates face outward (RF orientation)."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: outward_oriented_pairs
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Outward pairs"
+        shared_key: read_count
+
+  read_1_count:
+    title: "Read 1 count"
+    description: "Number of reads flagged as read 1 (first in pair)."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: read_1
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Read-1"
+        shared_key: read_count
+
+  read_2_count:
+    title: "Read 2 count"
+    description: "Number of reads flagged as read 2 (second in pair)."
+    unit: reads
+    category: alignment
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: read_2
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Read-2"
+        shared_key: read_count
+
+  # =========================================================================
+  # ALIGNMENT — Strandedness
+  # =========================================================================
+
+  reads_sense_strand:
+    title: "Reads on sense strand"
+    description: "Reads mapping to the positive/sense strand."
+    unit: reads
+    category: strandedness
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: reads_map_to_sense
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "+ve strand"
+        description: "Reads map to '+'"
+        shared_key: read_count
+
+  reads_antisense_strand:
+    title: "Reads on antisense strand"
+    description: "Reads mapping to the negative/antisense strand."
+    unit: reads
+    category: strandedness
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: reads_map_to_antisense
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "-ve strand"
+        description: "Reads map to '-'"
+        shared_key: read_count
+
+  # =========================================================================
+  # ALIGNMENT — Splicing
+  # =========================================================================
+
+  splice_reads:
+    title: "Splice reads"
+    description: "Reads spanning a splice junction (contain N in CIGAR)."
+    unit: reads
+    category: splicing
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: splice_reads
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Splice reads"
+        shared_key: read_count
+
+  non_splice_reads:
+    title: "Non-splice reads"
+    description: "Reads that do not span a splice junction."
+    unit: reads
+    category: splicing
+    shared_key: read_count
+    sources:
+      - anchor: rseqc_bam_stat
+        metric: non-splice_reads
+        section_key: rseqc_bam_stat_table
+        tool: rseqc
+        title: "Non-splice reads"
+        shared_key: read_count
+
+  # =========================================================================
+  # COVERAGE
+  # =========================================================================
+
+  median_coverage:
+    title: "Median coverage"
+    description: "Median depth of sequencing coverage across the genome."
+    unit: X
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: median_coverage
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "Median"
+        description: "Median coverage"
+
+  coverage_1x_fraction:
+    title: "Fraction of genome covered ≥1X"
+    description: "Fraction of target bases with at least 1X sequencing coverage."
+    unit: fraction
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: 1_x_pc
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "≥ 1X"
+        description: "Fraction of genome with at least 1X coverage"
+
+  coverage_5x_fraction:
+    title: "Fraction of genome covered ≥5X"
+    description: "Fraction of target bases with at least 5X sequencing coverage."
+    unit: fraction
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: 5_x_pc
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "≥ 5X"
+        description: "Fraction of genome with at least 5X coverage"
+
+  coverage_10x_fraction:
+    title: "Fraction of genome covered ≥10X"
+    description: "Fraction of target bases with at least 10X sequencing coverage."
+    unit: fraction
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: 10_x_pc
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "≥ 10X"
+        description: "Fraction of genome with at least 10X coverage"
+
+  coverage_30x_fraction:
+    title: "Fraction of genome covered ≥30X"
+    description: "Fraction of target bases with at least 30X sequencing coverage."
+    unit: fraction
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: 30_x_pc
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "≥ 30X"
+        description: "Fraction of genome with at least 30X coverage"
+
+  coverage_50x_fraction:
+    title: "Fraction of genome covered ≥50X"
+    description: "Fraction of target bases with at least 50X sequencing coverage."
+    unit: fraction
+    category: coverage
+    sources:
+      - anchor: general_stats_table
+        metric: 50_x_pc
+        section_key: mosdepth
+        tool: mosdepth
+        namespace: "Mosdepth coverage"
+        title: "≥ 50X"
+        description: "Fraction of genome with at least 50X coverage"
+
+  # =========================================================================
+  # BASES
+  # =========================================================================
+
+  bases_mapped_cigar:
+    title: "Mapped bases (CIGAR)"
+    description: >
+      Number of bases that aligned to the reference, as computed from the
+      CIGAR string (excludes soft-clips).
+    unit: bases
+    category: bases
+    shared_key: base_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: bases_mapped_(cigar)
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Mapped bases (CIGAR)"
+        shared_key: base_count
+
+  bases_trimmed:
+    title: "Bases trimmed"
+    description: "Number of bases trimmed from reads."
+    unit: bases
+    category: bases
+    shared_key: base_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: bases_trimmed
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Bases Trimmed"
+        shared_key: base_count
+
+  bases_duplicated:
+    title: "Duplicated bases"
+    description: "Number of bases in duplicate reads."
+    unit: bases
+    category: bases
+    shared_key: base_count
+    sources:
+      - anchor: samtools-stats-dp
+        metric: bases_duplicated
+        section_key: samtools-stats-dp_table
+        tool: samtools
+        title: "Duplicated bases"
+        shared_key: base_count
+
+  # =========================================================================
+  # INSERT SIZE
+  # =========================================================================
+
+  insert_size_median:
+    title: "Median insert size"
+    description: >
+      Median insert size across all read orientations, as reported by Picard
+      CollectInsertSizeMetrics.
+    unit: bp
+    category: insert_size
+    sources:
+      - anchor: general_stats_table
+        metric: summed_median
+        section_key: picard
+        tool: picard
+        namespace: "Picard CollectMultipleMetrics: InsertSizeMetrics"
+        title: "Insert Size"
+        description: "Median Insert Size, all read orientations (bp)"
+
+  insert_size_mean:
+    title: "Mean insert size"
+    description: >
+      Mean insert size across all read orientations, as reported by Picard
+      CollectInsertSizeMetrics.
+    unit: bp
+    category: insert_size
+    sources:
+      - anchor: general_stats_table
+        metric: summed_mean
+        section_key: picard
+        tool: picard
+        namespace: "Picard CollectMultipleMetrics: InsertSizeMetrics"
+        title: "Mean Insert Size"
+        description: "Mean Insert Size, all read orientations (bp)"

@@ -6,6 +6,7 @@
 
 include { SAMTOOLS_FASTQ         } from '../modules/nf-core/samtools/fastq/main'
 include { FASTPLONG              } from '../modules/nf-core/fastplong/main'
+include { MULTIQCMAPPER          } from '../modules/local/multiqcmapper/main'
 
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
@@ -170,9 +171,16 @@ workflow AQUA {
         []
     )
 
+    if (params.concepts_yaml) {
+        MULTIQCMAPPER (
+            MULTIQC.out.data,
+            file(params.concepts_yaml)
+        )
+        ch_versions = ch_versions.mix(MULTIQCMAPPER.out.versions)
+    }
+
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
 }
 
 /*
