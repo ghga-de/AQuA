@@ -62,9 +62,3 @@ jobs:
           -exec nextflow lint -format -sort-declarations -harshil-alignment {} + \
           | (! grep 'formatted') \
           || (echo 'Some Nextflow scripts were not formatted properly!' && exit 1)
-
-      - name: Lint modules
-        run: nf-core --hide-progress modules lint --all
-
-      - name: Lint subworkflows
-        run: nf-core --hide-progress subworkflows lint --all

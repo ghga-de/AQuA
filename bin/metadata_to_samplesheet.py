@@ -36,7 +36,6 @@ import json
 import os
 from collections import Counter
 from itertools import zip_longest
-from pathlib import Path
 
 ##########################
 ### Method resolution  ###
