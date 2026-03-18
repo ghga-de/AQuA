@@ -17,7 +17,7 @@ runs:
     - name: Setup Nextflow
       uses: nf-core/setup-nextflow@v2
       with:
-        version: "${{ env.NXF_VERSION || 'latest' }}"
+        version: "latest"
 
     - name: Install nf-test
       uses: nf-core/setup-nf-test@v1
@@ -28,18 +28,13 @@ runs:
       id: shards
       shell: bash
       run: |
-        # Use --changed-since to find tests. 
-        # On PRs, we compare against the target branch (base_ref)
         DIFF_TARGET=${{ github.base_ref || 'main' }}
         
         nftest_output=$(nf-test test \
           --profile +docker \
           --dry-run \
           --ci \
-          --changed-since $DIFF_TARGET) || {
-            echo "nf-test dry-run failed."
-            exit 1
-        }
+          --changed-since $DIFF_TARGET)
 
         shard="[]"
         total_shards=0
@@ -47,14 +42,9 @@ runs:
         if echo "$nftest_output" | grep -q 'No tests to execute'; then
           echo "No changed tests found."
         else
-          # Extract number of tests from the "Executed X tests" string
           num_tests=$(echo "$nftest_output" | grep "Executed" | awk '{print $2}')
-          
           if [[ -n "$num_tests" && "$num_tests" -gt 0 ]]; then
-            # Calculate how many shards to actually run
             shards_to_run=$(( num_tests < ${{ inputs.max_shards }} ? num_tests : ${{ inputs.max_shards }} ))
-            
-            # Generate JSON array [1, 2, 3...]
             shard=$(seq 1 "$shards_to_run" | jq -R . | jq -c -s .)
             total_shards="$shards_to_run"
           fi

@@ -3,15 +3,10 @@ on:
   pull_request:
     paths-ignore:
       - "docs/**"
-      - "**/meta.yml"
-      - "**/*.md"
-      - "**/*.png"
-      - "**/*.svg"
   release:
     types: [published]
   workflow_dispatch:
 
-# Cancel if a newer run is started
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -33,24 +28,18 @@ jobs:
       total_shards: ${{ steps.set-shards.outputs.total_shards }}
     steps:
       - name: Clean Workspace 
-        run: |
-          ls -la ./
-          rm -rf ./* || true
-          rm -rf ./.??* || true
+        run: rm -rf ./* || true
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
       - name: get number of shards
         id: set-shards
         uses: ./.github/actions/get-shards
-        env:
-          NFT_VER: ${{ env.NFT_VER }}
         with:
           max_shards: 7
 
   nf-test:
-    name: "${{ matrix.profile }} | ${{ matrix.NXF_VER }} | ${{ matrix.shard }}/${{ needs.nf-test-changes.outputs.total_shards }}"
+    name: "${{ matrix.profile }} | ${{ matrix.shard }}/${{ needs.nf-test-changes.outputs.total_shards }}"
     needs: [nf-test-changes]
     if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
     runs-on: ubuntu-latest
@@ -59,58 +48,27 @@ jobs:
       matrix:
         shard: ${{ fromJson(needs.nf-test-changes.outputs.shard) }}
         profile: [docker, singularity]
-        isMain:
-          - ${{ github.base_ref == 'master' || github.base_ref == 'main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'release' }}
-        exclude:
-          - isMain: false
-            profile: "singularity"
-        NXF_VER:
-          - "25.04.0"
-          - "latest-everything"
+        NXF_VER: ["25.04.0"]
     env:
-      NXF_ANSI_LOG: false
-      TOTAL_SHARDS: ${{ needs.nf-test-changes.outputs.total_shards }}
-
+      NXF_VERSION: ${{ matrix.NXF_VER }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-
       - name: Run nf-test
-        id: run_nf_test
         uses: ./.github/actions/nf-test
-        continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
-        env:
-          NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
-          NXF_VERSION: ${{ matrix.NXF_VER }}
         with:
           profile: ${{ matrix.profile }}
           shard: ${{ matrix.shard }}
-          total_shards: ${{ env.TOTAL_SHARDS }}
-
-      - name: Report test status
-        if: ${{ always() }}
-        run: |
-          if [[ "${{ steps.run_nf_test.outcome }}" == "failure" ]]; then
-            echo "::error::Test with ${{ matrix.NXF_VER }} failed"
-            if [[ "${{ matrix.NXF_VER }}" != "latest-everything" ]]; then
-              exit 1
-            fi
-          fi
+          total_shards: ${{ needs.nf-test-changes.outputs.total_shards }}
+          paths: "."
 
   confirm-pass:
     needs: [nf-test]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: One or more tests failed
-        if: ${{ contains(needs.*.result, 'failure') }}
-        run: exit 1
-
-      - name: One or more tests cancelled
-        if: ${{ contains(needs.*.result, 'cancelled') }}
-        run: exit 1
-
-      - name: All tests ok
-        if: ${{ contains(needs.*.result, 'success') }}
-        run: exit 0
+      - name: Check Status
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then exit 1; fi
+          if [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then exit 1; fi
