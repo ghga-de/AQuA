@@ -13,6 +13,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 Each sample has a dedicated directory named after its sample identifier. Inside these folders, you will find tool-specific results depending on the input type (FastQ, BAM, or VCF) and analysis method.
 
 ### FastQC
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -25,6 +26,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) gives general quality metrics about your sequenced reads. It provides information about the quality score distribution across your reads, per base sequence content, adapter contamination and overrepresented sequences.
 
 ### Fastp
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -38,6 +40,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [Fastp](https://github.com/OpenGene/fastp) is an ultra-fast tool that performs basic quality control and provides detailed metrics on read quality before and after any filtering steps.
 
 ### Picard CollectMultipleMetrics
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -52,6 +55,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [Picard](https://broadinstitute.github.io/picard/) is used for alignment quality assessment. It generates comprehensive metrics regarding mapping rates, duplication, and read distribution.
 
 ### Mosdepth
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -64,6 +68,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [Mosdepth](https://github.com/brentp/mosdepth) provides extremely fast coverage calculations. It determines how well the target regions were covered by sequencing and identifies potential gaps in data.
 
 ### BCFtools Stats
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -75,6 +80,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [BCFtools](http://samtools.github.io/bcftools/bcftools.html) generates statistics for VCF files, including the number of SNPs, indels, transitions, and transversions.
 
 ### NanoPlot (Long Reads)
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -88,6 +94,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 [NanoPlot](https://github.com/wdecoster/NanoPlot) is used specifically for long-read data (Nanopore or PacBio) to visualize read lengths and quality scores.
 
 ### SeqFU
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -97,6 +104,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 </details>
 
 ### RSeQC
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -106,6 +114,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 </details>
 
 ### Samtools
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -121,6 +130,7 @@ Each sample has a dedicated directory named after its sample identifier. Inside 
 These directories contain reports and files that combine data from across the entire run.
 
 ### MultiQC
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -133,8 +143,8 @@ These directories contain reports and files that combine data from across the en
 
 [MultiQC](http://multiqc.info) aggregates results from every QC tool used in the pipeline into a single report. This is the primary file to check for an overall assessment.
 
-
 ### Pipeline information
+
 <details markdown="1">
 <summary>Output files</summary>
 

@@ -9,7 +9,7 @@ Initial release of ghga-de/aqua, created with the [nf-core](https://nf-co.re/) t
 
 ### `Added`
 
-- Add `MULTIQCMAPPER` local module to produce a unified long-format QC metrics table from MultiQC output using [multiqc-mapper](https://github.com/MKoesters/multiqc-mapper). Enabled by passing `--concepts_yaml <path/to/concepts.yaml>` ([#]([https://github.com/ghga-de/qcmetrics/issues/](https://github.com/kubranarci/ghga_QualityControl/issues/5))).
+- Add `MULTIQCMAPPER` local module to produce a unified long-format QC metrics table from MultiQC output using [multiqc-mapper](https://github.com/MKoesters/multiqc-mapper). Enabled by passing `--concepts_yaml <path/to/concepts.yaml>` ([#](<[https://github.com/ghga-de/qcmetrics/issues/](https://github.com/kubranarci/ghga_QualityControl/issues/5)>)).
 
 ### `Fixed`
 

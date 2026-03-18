@@ -9,7 +9,7 @@ jobs:
     if: >
       contains(github.event.comment.html_url, '/pull/') &&
       contains(github.event.comment.body, '@nf-core-bot fix linting') &&
-      github.repository == 'ghga-de/aqua'
+      github.repository == 'ghga-de/AQuA'
     runs-on: ubuntu-latest
     steps:
       # Use the @nf-core-bot token to check out so we can push later
@@ -55,6 +55,7 @@ jobs:
       - name: Commit & push changes
         id: commit-and-push
         if: steps.pre-commit.outcome == 'failure'
+        continue-on-error: true
         run: |
           git config user.email "core@nf-co.re"
           git config user.name "nf-core-bot"
@@ -86,4 +87,4 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: |
             @${{ github.actor }} I tried to fix the linting errors, but it didn't work. Please fix them manually.
-            See [CI log](https://github.com/ghga-de/aqua/actions/runs/${{ github.run_id }}) for more details.
+            See [CI log](https://github.com/ghga-de/AQuA/actions/runs/${{ github.run_id }}) for more details.

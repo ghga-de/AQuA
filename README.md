@@ -16,6 +16,7 @@
 ## Introduction
 
 **GHGA AQuA (Automatic Quality Assessment) Pipeline** is a bioinformatics pipeline that performs basic quality control over input datasets without altering the raw data. It accepts three main input types:
+
 1. Raw FastQ files
 2. Aligned BAM/CRAM files
 3. Variant called VCF/BCF files
@@ -26,16 +27,16 @@ The pipeline automatically selects the appropriate quality control tools based o
 
 The following table details which tools are executed based on the analysis method and input data type provided in the samplesheet.
 
-| Analysis Method | Read QC (FastQ) | Alignment QC (BAM/CRAM) | Variant QC (VCF) |
-| :--- | :--- | :--- | :--- |
-| **WGS / WES / TES** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, NGS-Bits* | BCFTools Stats |
-| **ATAC / ChIP-Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard | BCFTools Stats |
-| **RNA-Seq / smRNA** | FastQC, FastP, SeqFU | RSeQC | BCFTools Stats |
-| **Nanopore** | FastQC, NanoPlot | - | BCFTools Stats |
-| **PacBio** | FastPLong | - | BCFTools Stats |
-| **MethylSeq** | FastQC, FastP, SeqFU | - | BCFTools Stats |
+| Analysis Method     | Read QC (FastQ)      | Alignment QC (BAM/CRAM)                                   | Variant QC (VCF) |
+| :------------------ | :------------------- | :-------------------------------------------------------- | :--------------- |
+| **WGS / WES / TES** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, NGS-Bits\* | BCFTools Stats   |
+| **ATAC / ChIP-Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard                          | BCFTools Stats   |
+| **RNA-Seq / smRNA** | FastQC, FastP, SeqFU | RSeQC                                                     | BCFTools Stats   |
+| **Nanopore**        | FastQC, NanoPlot     | -                                                         | BCFTools Stats   |
+| **PacBio**          | FastPLong            | -                                                         | BCFTools Stats   |
+| **MethylSeq**       | FastQC, FastP, SeqFU | -                                                         | BCFTools Stats   |
 
-> \* *NGS-Bits SampleGender is run for WGS if `predict_sex` is enabled.*
+> \* _NGS-Bits SampleGender is run for WGS if `predict_sex` is enabled._
 
 ## Usage
 
@@ -46,9 +47,10 @@ The pipeline can be started in two ways: by providing a manual samplesheet or by
 Create a samplesheet.csv with your data. The pipeline auto-detects the starting step based on which columns are populated.
 
 You must create a `samplesheet.csv` containing your input data. The structure requires a `step` column to tell the pipeline which type of file you are providing:
-* **step 1**: FastQ files (Read QC)
-* **step 2**: BAM/CRAM files (Alignment QC)
-* **step 3**: VCF files (Variant QC)
+
+- **step 1**: FastQ files (Read QC)
+- **step 2**: BAM/CRAM files (Alignment QC)
+- **step 3**: VCF files (Variant QC)
 
 A samplesheet containing a mix of raw data, mapped bams, and variant files would look like this:
 
@@ -59,32 +61,31 @@ SAMPLE_BAM,L001,ind_2,FEMALE,wgs,,,s2.bam,s2.bam.bai,
 SAMPLE_VCF,L001,ind_3,NA,wgs,,,,,s3.vcf.gz
 ```
 
-| Column | Description |
-| :--- | :--- |
-| `sample` | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
-| `lane` | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces. |
-| `individual_id` | Identifier for the individual (patient/subject). |
-| `sex` | Biological sex of the individual (e.g., MALE, FEMALE, NA). |
-| `status` | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case). |
-| `phenotype` | Phenotypic terms or descriptions associated with the individual. |
-| `sample_type` | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA). |
-| `disease_status` | Text description of the disease status (e.g., Healthy, Tumor). |
-| `case_control_status` | Status in the study design (e.g., CASE, CONTROL). |
-| `tissue` | The source tissue of the specimen (e.g., blood, tissue). |
-| `experiment_method` | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`. |
-| `analysis_method` | The type of analysis performed (e.g., `varcall`). |
-| `fastq_1` | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`. |
-| `fastq_2` | Path to the Read 2 FastQ file for paired-end data. Optional for single-end. |
-| `single_end` | Boolean (`true`/`false`) indicating if the sequencing is single-end. |
-| `bam` | Path to the aligned BAM file. |
-| `bai` | Path to the corresponding BAM index file. |
-| `cram` | Path to the aligned CRAM file. |
-| `crai` | Path to the corresponding CRAM index file. |
-| `vcf` | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`. |
-| `data_files` | Semicolon-separated list of any other relevant data files not covered by specific columns. |
+| Column                | Description                                                                                                                                                                        |
+| :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`              | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
+| `lane`                | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces.                                                                           |
+| `individual_id`       | Identifier for the individual (patient/subject).                                                                                                                                   |
+| `sex`                 | Biological sex of the individual (e.g., MALE, FEMALE, NA).                                                                                                                         |
+| `status`              | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case).                                                                                                            |
+| `phenotype`           | Phenotypic terms or descriptions associated with the individual.                                                                                                                   |
+| `sample_type`         | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA).                                                                                                                                 |
+| `disease_status`      | Text description of the disease status (e.g., Healthy, Tumor).                                                                                                                     |
+| `case_control_status` | Status in the study design (e.g., CASE, CONTROL).                                                                                                                                  |
+| `tissue`              | The source tissue of the specimen (e.g., blood, tissue).                                                                                                                           |
+| `experiment_method`   | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`.                                                                                   |
+| `analysis_method`     | The type of analysis performed (e.g., `varcall`).                                                                                                                                  |
+| `fastq_1`             | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`.                                                                                                                |
+| `fastq_2`             | Path to the Read 2 FastQ file for paired-end data. Optional for single-end.                                                                                                        |
+| `single_end`          | Boolean (`true`/`false`) indicating if the sequencing is single-end.                                                                                                               |
+| `bam`                 | Path to the aligned BAM file.                                                                                                                                                      |
+| `bai`                 | Path to the corresponding BAM index file.                                                                                                                                          |
+| `cram`                | Path to the aligned CRAM file.                                                                                                                                                     |
+| `crai`                | Path to the corresponding CRAM index file.                                                                                                                                         |
+| `vcf`                 | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`.                                                                                                             |
+| `data_files`          | Semicolon-separated list of any other relevant data files not covered by specific columns.                                                                                         |
 
 An [example samplesheet](../tests/samplesheets/samplesheet.csv) has been provided with the pipeline.
-
 
 ### Option B: GHGA Metadata (JSON)
 
@@ -100,6 +101,7 @@ nextflow run main.nf \
    --input samplesheet.csv \
    --outdir ./results
 ```
+
 or using the command below with input metadata.json.
 
 ```bash
@@ -115,34 +117,35 @@ nextflow run main.nf \
 ## Supported Tools
 
 ### Read QC
-* [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/): Comprehensive quality control checks on raw sequence data.
-* [**FastP**](https://github.com/OpenGene/fastp): All-in-one FASTQ preprocessor (used here for QC metrics).
-* [**SeqFU**](https://telatin.github.io/seqfu2/tools/metadata.html): Sequence statstics
-* [**NanoPlot**](https://github.com/wdecoster/NanoPlot): Plotting tool for long read sequencing data and alignments.
-* [**FastPLong**](https://github.com/OpenGene/fastplong): Quality control for long read data (PacBio).
+
+- [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/): Comprehensive quality control checks on raw sequence data.
+- [**FastP**](https://github.com/OpenGene/fastp): All-in-one FASTQ preprocessor (used here for QC metrics).
+- [**SeqFU**](https://telatin.github.io/seqfu2/tools/metadata.html): Sequence statstics
+- [**NanoPlot**](https://github.com/wdecoster/NanoPlot): Plotting tool for long read sequencing data and alignments.
+- [**FastPLong**](https://github.com/OpenGene/fastplong): Quality control for long read data (PacBio).
 
 ### Alignment QC
-* [**Mosdepth**](https://github.com/brentp/mosdepth): Fast BAM/CRAM depth calculation.
-* [**Samtools Stats**](http://www.htslib.org/doc/samtools.html): General statistics for alignment files.
-* [**Picard CollectMultipleMetrics**](https://broadinstitute.github.io/picard/): Collects multiple classes of metrics from alignment files.
-* [**RSeQC**](http://rseqc.sourceforge.net/): Quality control for RNA-seq experiments.
-* [**NGS-Bits SampleGender**](https://github.com/imgag/ngs-bits): Sex determination based on coverage.
-* [**VerifyBamID**](https://github.com/Griffan/VerifyBamID): A robust tool for DNA contamination estimation from sequence reads using ancestry-agnostic method.
+
+- [**Mosdepth**](https://github.com/brentp/mosdepth): Fast BAM/CRAM depth calculation.
+- [**Samtools Stats**](http://www.htslib.org/doc/samtools.html): General statistics for alignment files.
+- [**Picard CollectMultipleMetrics**](https://broadinstitute.github.io/picard/): Collects multiple classes of metrics from alignment files.
+- [**RSeQC**](http://rseqc.sourceforge.net/): Quality control for RNA-seq experiments.
+- [**NGS-Bits SampleGender**](https://github.com/imgag/ngs-bits): Sex determination based on coverage.
+- [**VerifyBamID**](https://github.com/Griffan/VerifyBamID): A robust tool for DNA contamination estimation from sequence reads using ancestry-agnostic method.
 
 ### Variant QC
-* [**BCFTools Stats**](http://samtools.github.io/bcftools/bcftools.html): Statistics for VCF/BCF files.
+
+- [**BCFTools Stats**](http://samtools.github.io/bcftools/bcftools.html): Statistics for VCF/BCF files.
 
 ### Reporting
-* [**MultiQC**](http://multiqc.info/): Aggregates results from all tools into a single HTML report.
+
+- [**MultiQC**](http://multiqc.info/): Aggregates results from all tools into a single HTML report.
 
 ## Credits
 
-GHGA AQuA nextflow pipeline was originally written by Kubra Narci @kubranarci. 
+GHGA AQuA nextflow pipeline was originally written by Kubra Narci @kubranarci.
 
-Current development team:
-    - Manuel Kösters
-    - Virag Sharma
-    - Ruchi Tanavade 
+Current development team: - Manuel Kösters - Virag Sharma - Ruchi Tanavade
 
 ## Contributions and Support
 

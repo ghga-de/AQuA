@@ -26,7 +26,7 @@ process MULTIQCMAPPER {
         "${concepts_yaml}" \\
         --output unified.tsv \\
         --format tsv \\
-        $args
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

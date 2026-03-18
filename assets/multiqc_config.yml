@@ -24,7 +24,7 @@ table_columns_visible:
 run_modules:
   - fastqc
   - fastp
-#  - fastplong
+  #  - fastplong
   - mosdepth
   - picard
   - rseqc
@@ -42,7 +42,7 @@ module_order:
   - fastp:
       name: "FastP"
   - fastplong:
-      name: "FastP Long"      
+      name: "FastP Long"
   - samtools:
       name: "samtools stats"
   - mosdepth:
@@ -54,11 +54,11 @@ module_order:
   - bcftools:
       name: "bcftools stats"
   - ngsbits:
-      name: "ngsbits samplegender"  
+      name: "ngsbits samplegender"
   - preseq:
       name: "Preseq complexity estimation"
   - verifybamid:
-      name: "verifybamid contaimination estimation"  
+      name: "verifybamid contaimination estimation"
 
 general_stats_columns:
   samtools/stats:
@@ -71,7 +71,6 @@ general_stats_columns:
         title: "Error rate"
         description: "Error rate from samtools stats"
         hidden: false
-
 
 extra_fn_clean_exts:
   - "_val"

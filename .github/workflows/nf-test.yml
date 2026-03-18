@@ -70,7 +70,7 @@ jobs:
         shard: ${{ fromJson(needs.nf-test-changes.outputs.shard) }}
         profile: [docker, singularity]
         isMain:
-          - ${{ github.base_ref == 'master' || github.base_ref == 'main' }}
+          - ${{ github.base_ref == 'master' || github.base_ref == 'main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main' || github.event_name == 'release' }}
         # Exclude conda for all and singularity on dev
         exclude:
           - isMain: false

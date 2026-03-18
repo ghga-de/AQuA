@@ -90,10 +90,7 @@
             },
             "single_end": {
                 "meta": ["single_end"],
-                "oneOf": [
-                    { "type": "boolean" },
-                    { "type": "string", "enum": ["true", "false", "TRUE", "FALSE"] }
-                ]
+                "oneOf": [{ "type": "boolean" }, { "type": "string", "enum": ["true", "false", "TRUE", "FALSE"] }]
             },
             "cram": {
                 "errorMessage": "CRAM file cannot contain spaces and must have extension '.cram'",

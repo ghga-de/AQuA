@@ -6,7 +6,8 @@
 
 The ghga-de/aqua pipeline is designed for comprehensive quality control of genomic and transcriptomic data. It supports multiple input formats, including raw sequencing reads (FASTQ) and aligned sequences (BAM/CRAM), as well as variant calls (VCF). The pipeline adaptively selects QC tools based on the input type and sequencing method specified in the samplesheet.
 
-## Metadata JSON input 
+## Metadata JSON input
+
 If you are a GHGA user, you can also provide a metadata JSON file directly. The pipeline will automatically convert this into the required samplesheet format:
 
 ```bash
@@ -37,6 +38,7 @@ CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
 ## Flexible Data Inputs
 
 The pipeline supports three primary "steps" or entry points based on the files provided:
+
 1. Raw Reads (Step 1): Provide fastq_1 (and optionally fastq_2).
 2. Alignments (Step 2): Provide bam and bai (or cram and crai).
 3. Variants (Step 3): Provide vcf.
@@ -62,29 +64,29 @@ SAMPLE_BAM,L001,ind_2,FEMALE,wgs,,,s2.bam,s2.bam.bai,
 SAMPLE_VCF,L001,ind_3,NA,wgs,,,,,s3.vcf.gz
 ```
 
-| Column | Description |
-| :--- | :--- |
-| `sample` | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
-| `lane` | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces. |
-| `individual_id` | Identifier for the individual (patient/subject). |
-| `sex` | Biological sex of the individual (e.g., MALE, FEMALE, NA). |
-| `status` | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case). |
-| `phenotype` | Phenotypic terms or descriptions associated with the individual. |
-| `sample_type` | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA). |
-| `disease_status` | Text description of the disease status (e.g., Healthy, Tumor). |
-| `case_control_status` | Status in the study design (e.g., CASE, CONTROL). |
-| `tissue` | The source tissue of the specimen (e.g., blood, tissue). |
-| `experiment_method` | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`. |
-| `analysis_method` | The type of analysis performed (e.g., `varcall`). |
-| `fastq_1` | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`. |
-| `fastq_2` | Path to the Read 2 FastQ file for paired-end data. Optional for single-end. |
-| `single_end` | Boolean (`true`/`false`) indicating if the sequencing is single-end. |
-| `bam` | Path to the aligned BAM file. |
-| `bai` | Path to the corresponding BAM index file. |
-| `cram` | Path to the aligned CRAM file. |
-| `crai` | Path to the corresponding CRAM index file. |
-| `vcf` | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`. |
-| `data_files` | Semicolon-separated list of any other relevant data files not covered by specific columns. |
+| Column                | Description                                                                                                                                                                        |
+| :-------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sample`              | **Required.** Custom sample name. This identifier is used to group multiple sequencing runs (lanes) from the same sample. Spaces are automatically converted to underscores (`_`). |
+| `lane`                | **Required.** identifier for the sequencing lane or library (e.g., L001, L002). Must not contain spaces.                                                                           |
+| `individual_id`       | Identifier for the individual (patient/subject).                                                                                                                                   |
+| `sex`                 | Biological sex of the individual (e.g., MALE, FEMALE, NA).                                                                                                                         |
+| `status`              | Disease status as an integer: `0` (Normal/Control) or `1` (Tumor/Case).                                                                                                            |
+| `phenotype`           | Phenotypic terms or descriptions associated with the individual.                                                                                                                   |
+| `sample_type`         | The type of sample (e.g., GENOMIC_DNA, TOTAL_RNA).                                                                                                                                 |
+| `disease_status`      | Text description of the disease status (e.g., Healthy, Tumor).                                                                                                                     |
+| `case_control_status` | Status in the study design (e.g., CASE, CONTROL).                                                                                                                                  |
+| `tissue`              | The source tissue of the specimen (e.g., blood, tissue).                                                                                                                           |
+| `experiment_method`   | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`.                                                                                   |
+| `analysis_method`     | The type of analysis performed (e.g., `varcall`).                                                                                                                                  |
+| `fastq_1`             | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`.                                                                                                                |
+| `fastq_2`             | Path to the Read 2 FastQ file for paired-end data. Optional for single-end.                                                                                                        |
+| `single_end`          | Boolean (`true`/`false`) indicating if the sequencing is single-end.                                                                                                               |
+| `bam`                 | Path to the aligned BAM file.                                                                                                                                                      |
+| `bai`                 | Path to the corresponding BAM index file.                                                                                                                                          |
+| `cram`                | Path to the aligned CRAM file.                                                                                                                                                     |
+| `crai`                | Path to the corresponding CRAM index file.                                                                                                                                         |
+| `vcf`                 | Path to the Variant Call Format file. Must end in `.vcf` or `.vcf.gz`.                                                                                                             |
+| `data_files`          | Semicolon-separated list of any other relevant data files not covered by specific columns.                                                                                         |
 
 An [example samplesheet](../tests/samplesheets/samplesheet.csv) has been provided with the pipeline.
 

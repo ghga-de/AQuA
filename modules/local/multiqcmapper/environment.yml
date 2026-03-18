@@ -5,4 +5,4 @@ dependencies:
   - python>=3.9
   - pip
   - pip:
-    - multiqc_mapper==0.1.0
+      - multiqc_mapper==0.1.0

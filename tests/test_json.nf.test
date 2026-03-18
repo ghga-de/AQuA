@@ -3,7 +3,7 @@ nextflow_pipeline {
     name "Test pipeline using input metadata.json"
     script "../main.nf"
     tag "pipeline"
-    config "tests/configs/test_json.config"
+    config "conf/test.config"
 
     test("test json") {
 

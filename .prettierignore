@@ -9,3 +9,4 @@ testing*
 *.pyc
 bin/
 ro-crate-metadata.json
+modules/local/multiqcmapper/meta.yml
