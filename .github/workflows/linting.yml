@@ -1,80 +1,58 @@
-name: nf-core linting
-# This workflow is triggered on pushes and PRs to the repository.
-# It runs the `nf-core pipelines lint` and markdown lint tests to ensure
-# that the code meets the nf-core guidelines.
+name: Linting
 on:
+  push:
+    branches: [main]
   pull_request:
-  release:
-    types: [published]
+    branches: [main]
+
+# Cancel if a newer run is started
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  pre-commit:
+  lints:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        # required for Conda
+        shell: bash -el {0}
     steps:
-      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Set up Python 3.14
-        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
+      - name: Cache Conda packages
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
-          python-version: "3.14"
+          path: ~/conda_pkgs_dir
+          key: conda-pkgs_${{ runner.os }}_${{ hashFiles('environment-dev.conda.linux-64.lock') }}
 
-      - name: Install pre-commit
-        run: pip install pre-commit
-
-      - name: Run pre-commit
-        run: pre-commit run --all-files
-
-  nf-core:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out pipeline code
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
-
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v2
-
-      - uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
+      - name: Set up development environment
+        uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830 # v3.1.1
         with:
-          python-version: "3.14"
-          architecture: "x64"
+          miniforge-version: latest
+          conda-remove-defaults: "true"
+          environment-file: environment-dev.conda.linux-64.lock
+          use-only-tar-bz2: true # required for proper caching
 
-      - name: read .nf-core.yml
-        uses: pietrobolcato/action-read-yaml@9f13718d61111b69f30ab4ac683e67a56d254e1d # 1.1.0
-        id: read_yml
-        with:
-          config: ${{ github.workspace }}/.nf-core.yml
+      - name: Check Prettier formatting
+        run: prettier --check .
 
-      - name: Install dependencies
+      - name: Check Python script formatting
+        run: ruff format --check bin/
+
+      - name: Lint Python scripts
+        run: ruff check --extend-select I bin/
+
+      - name: Lint and check formatting of local Nextflow scripts
         run: |
-          python -m pip install --upgrade pip
-          pip install nf-core==${{ steps.read_yml.outputs['nf_core_version'] }}
+          find main.nf workflows/ subworkflows/local modules/local \
+          -exec nextflow lint -format -sort-declarations -harshil-alignment {} + \
+          | (! grep 'formatted') \
+          || (echo 'Some Nextflow scripts were not formatted properly!' && exit 1)
 
-      - name: Run nf-core pipelines lint
-        if: ${{ github.base_ref != 'master' }}
-        env:
-          GITHUB_COMMENTS_URL: ${{ github.event.pull_request.comments_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_PR_COMMIT: ${{ github.event.pull_request.head.sha }}
-        run: nf-core -l lint_log.txt pipelines lint --dir ${GITHUB_WORKSPACE} --markdown lint_results.md
+      - name: Lint nf-core modules
+        run: nf-core --hide-progress modules lint --all
 
-      - name: Run nf-core pipelines lint --release
-        if: ${{ github.base_ref == 'master' }}
-        env:
-          GITHUB_COMMENTS_URL: ${{ github.event.pull_request.comments_url }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_PR_COMMIT: ${{ github.event.pull_request.head.sha }}
-        run: nf-core -l lint_log.txt pipelines lint --release --dir ${GITHUB_WORKSPACE} --markdown lint_results.md
-
-      - name: Save PR number
-        if: ${{ always() }}
-        run: echo ${{ github.event.pull_request.number }} > PR_number.txt
-
-      - name: Upload linting log file artifact
-        if: ${{ always() }}
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
-        with:
-          name: linting-logs
-          path: |
-            lint_log.txt
-            lint_results.md
-            PR_number.txt
+      - name: Lint nf-core subworkflows
+        run: nf-core --hide-progress subworkflows lint --all
