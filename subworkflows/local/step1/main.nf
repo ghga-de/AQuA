@@ -16,16 +16,15 @@ workflow STEP1 {
     ch_versions      = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    // 1. Define filtered channels first
     ch_no_pacbio = samplesheet.filter { meta, reads -> 
-        !(meta.experiment_method?.toLowerCase() in ["pacbio"]) 
+        !(meta.experiment_method?.toLowerCase() in ["pacbio", "rna", "methylseq"]) 
     }
 
     ch_nanoplot_in = samplesheet.filter { meta, reads -> 
         meta.experiment_method?.toLowerCase() in ["nanopore"] 
     }
 
-    // 2. Runs FASTQC
+    //  Runs FASTQC
     if (!params.skip_tools?.contains('fastqc')) {
         FASTQC (
             samplesheet
@@ -34,7 +33,7 @@ workflow STEP1 {
         ch_versions = ch_versions.mix(FASTQC.out.versions.first())
     }
 
-    // 3. Runs FASTP (using filtered channel)
+    //  Runs FASTP for all exept pacbio, rna and methylseq samples, as FASTP does not support these data types
     if (!params.skip_tools?.contains('fastp')) {
         save_trimmed_fail = false
         save_merged = false
@@ -50,7 +49,7 @@ workflow STEP1 {
         ch_versions = ch_versions.mix(FASTP.out.versions)
     }
 
-    // 4. Runs SEQFU_STATS (using filtered channel)
+    // Runs SEQFU_STATS for all non-PacBio samples, as SEQFU_STATS does not support PacBio data
     if (!params.skip_tools?.contains('seqfu')) {
         SEQFU_STATS (
             ch_no_pacbio
@@ -59,7 +58,7 @@ workflow STEP1 {
         ch_versions = ch_versions.mix(SEQFU_STATS.out.versions)
     }
     
-    // 5. Runs NANOPLOT (using filtered channel)
+    // Runs NANOPLOT for Nanopore data
     if (!params.skip_tools?.contains('nanoplot')) {
         NANOPLOT (
             ch_nanoplot_in

@@ -51,7 +51,7 @@ workflow AQUA {
     // create empty channels for versions and multiqc files
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    
+    ch_samplesheet.view()
     ch_samplesheet.branch{ it ->
         def meta = it[0]
         step1: meta.step == 1

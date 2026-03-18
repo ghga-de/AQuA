@@ -99,6 +99,12 @@ workflow STEP2 {
     }
 
     // Runs PICARD_COLLECTMULTIPLEMETRICS
+    // Run Picard CollectInsertSizeMetrics
+    // if rna run picard_collectrnaseqmetrics
+    // if small rna run mirdeep2
+    // if atac seq run ATACseqQC
+    // if methlation run Bismark or Qualimap
+    // if chip seq Phantompeakqualtools
     if (!params.skip_tools?.contains('picard_collectmultiplemetrics')) {
         PICARD_COLLECTMULTIPLEMETRICS(
             ch_final_bam_indexed,
@@ -109,22 +115,22 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
     }
 
-        if (params.run_contamination_estimation && ch_refvcf){
-            // Runs VERIFYBAMID_VERIFYBAMID if samplesheet has bam/cram files and if reference vcf is given
-            if (!params.skip_tools?.contains('verifybamid')) {
-                VERIFYBAMID_VERIFYBAMID(
-                    ch_final_bam_indexed,
-                    ch_refvcf     
-                )
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfsm.map { _meta, file -> file }.collect())
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.depthsm.map { _meta, file -> file }.collect())
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfrg.map { _meta, file -> file }.collect())
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.depthrg.map { _meta, file -> file }.collect())
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.bestsm.map { _meta, file -> file }.collect())
-                ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.log.map { _meta, file -> file }.collect())
-                ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID.out.versions)
-            }
+    if (params.run_contamination_estimation && ch_refvcf){
+        // Runs VERIFYBAMID_VERIFYBAMID if samplesheet has bam/cram files and if reference vcf is given
+        if (!params.skip_tools?.contains('verifybamid')) {
+            VERIFYBAMID_VERIFYBAMID(
+                ch_final_bam_indexed,
+                ch_refvcf     
+            )
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfsm.map { _meta, file -> file }.collect())
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.depthsm.map { _meta, file -> file }.collect())
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfrg.map { _meta, file -> file }.collect())
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.depthrg.map { _meta, file -> file }.collect())
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.bestsm.map { _meta, file -> file }.collect())
+            ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.log.map { _meta, file -> file }.collect())
+            ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID.out.versions)
         }
+    }
 
 
     // Runs PRESEQ_LCEXTRAP if samplesheet has bam/cram files
