@@ -220,7 +220,6 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
         low = name.lower()
 
         if fmt == "FASTQ" or low.endswith((".fastq.gz", ".fq.gz", ".fastq", ".fq")):
-
             # Only schema-allowed FASTQ format goes into fastq buckets.
             # Use technical_replicate when it explicitly says 2 (definitive R2).
             # Otherwise fall back to filename patterns: _R2, _2.fastq, etc.
