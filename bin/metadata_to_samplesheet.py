@@ -43,21 +43,21 @@ from pathlib import Path
 ##########################
 
 LIBRARY_TYPE_MAP = {
-    "WGS":         "wgs",
-    "WXS":         "wes",
-    "WCS":         "wes",
-    "TOTAL_RNA":   "rna",
-    "M_RNA":       "rna",
-    "MI_RNA":      "smrna",
-    "NC_RNA":      "rna",
-    "ATAC":        "atac",
+    "WGS": "wgs",
+    "WXS": "wes",
+    "WCS": "wes",
+    "TOTAL_RNA": "rna",
+    "M_RNA": "rna",
+    "MI_RNA": "smrna",
+    "NC_RNA": "rna",
+    "ATAC": "atac",
     "METHYLATION": "methylseq",
-    "CHIP_SEQ":    "chip",
-    "OTHER":       "wgs",  # fallback for custom panels (e.g. cfDNA)
+    "CHIP_SEQ": "chip",
+    "OTHER": "wgs",  # fallback for custom panels (e.g. cfDNA)
 }
 
 NANOPORE_INSTRUMENTS = {"MINION", "GRIDION", "PROMETHION"}
-PACBIO_INSTRUMENTS   = {"PACBIO_RS", "PACBIO_RS_II", "SEQUEL", "SEQUEL_II", "SEQUEL_IIE"}
+PACBIO_INSTRUMENTS = {"PACBIO_RS", "PACBIO_RS_II", "SEQUEL", "SEQUEL_II", "SEQUEL_IIE"}
 
 
 def get_method(exp_method: dict) -> str:
@@ -92,9 +92,11 @@ def get_single_end(exp_method: dict) -> str:
     layout = exp_method.get("sequencing_layout", "").upper()
     return "true" if layout == "SE" else "false"
 
+
 ##########################
 ###   Index Builders   ###
 ##########################
+
 
 def _as_list(value) -> list:
     """Normalise a field that may be a list, a comma-separated string, or a scalar."""
@@ -112,9 +114,7 @@ def build_indices(metadata: dict) -> dict:
     """
     ### individuals: alias --> record
     individuals = {
-        ind["alias"]: ind
-        for ind in metadata.get("individuals", [])
-        if ind.get("alias")
+        ind["alias"]: ind for ind in metadata.get("individuals", []) if ind.get("alias")
     }
 
     ### experiment_methods: alias --> record
@@ -126,9 +126,7 @@ def build_indices(metadata: dict) -> dict:
 
     ### experiments: alias --> record
     experiments = {
-        exp["alias"]: exp
-        for exp in metadata.get("experiments", [])
-        if exp.get("alias")
+        exp["alias"]: exp for exp in metadata.get("experiments", []) if exp.get("alias")
     }
 
     ### sample --> experiments (all experiments; a sample may have multiple sequencing runs)
@@ -160,9 +158,7 @@ def build_indices(metadata: dict) -> dict:
 
     ### analyses: alias --> record
     analyses = {
-        ana["alias"]: ana
-        for ana in metadata.get("analyses", [])
-        if ana.get("alias")
+        ana["alias"]: ana for ana in metadata.get("analyses", []) if ana.get("alias")
     }
 
     ### experiment --> analyses (all analyses linked via RDF membership;
@@ -175,7 +171,7 @@ def build_indices(metadata: dict) -> dict:
                 if ana not in exp_to_analyses.get(exp_alias, []):
                     exp_to_analyses.setdefault(exp_alias, []).append(ana)
 
-    ### ProcessDataFiles: analysis alias --> list of process files 
+    ### ProcessDataFiles: analysis alias --> list of process files
     ### (ProcessDataFile links to Analysis, not directly to Experiment)
     analysis_to_pdfs: dict[str, list] = {}
     for pdf in metadata.get("process_data_files", []):
@@ -184,21 +180,22 @@ def build_indices(metadata: dict) -> dict:
             analysis_to_pdfs.setdefault(ana_ref, []).append(pdf)
 
     return {
-        "individuals":           individuals,
-        "exp_methods":           exp_methods,
-        "experiments":           experiments,
+        "individuals": individuals,
+        "exp_methods": exp_methods,
+        "experiments": experiments,
         "sample_to_experiments": sample_to_experiments,
-        "exp_to_rdfs":           exp_to_rdfs,
-        "exp_to_analyses":       exp_to_analyses,
-        "analysis_to_pdfs":      analysis_to_pdfs,
-        "analyses":              analyses,
-        "analysis_methods":      analysis_methods,
+        "exp_to_rdfs": exp_to_rdfs,
+        "exp_to_analyses": exp_to_analyses,
+        "analysis_to_pdfs": analysis_to_pdfs,
+        "analyses": analyses,
+        "analysis_methods": analysis_methods,
     }
 
 
 #############################
 #### File classification ####
 #############################
+
 
 def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
     """
@@ -207,7 +204,8 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
     Returns a dict with keys: fastq_1, fastq_2, bam, bai, cram, crai, vcf, other.
     """
     buckets: dict[str, list] = {
-        k: [] for k in ("fastq_1", "fastq_2", "bam", "bai", "cram", "crai", "vcf", "other")
+        k: []
+        for k in ("fastq_1", "fastq_2", "bam", "bai", "cram", "crai", "vcf", "other")
     }
     seen: set = set()
 
@@ -218,8 +216,8 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
         seen.add(name)
 
         path = os.path.join(input_directory, name) if input_directory else name
-        fmt  = str(f.get("format", "")).upper()
-        low  = name.lower()
+        fmt = str(f.get("format", "")).upper()
+        low = name.lower()
 
         if fmt == "FASTQ" or low.endswith((".fastq.gz", ".fq.gz", ".fastq", ".fq")):
 
@@ -256,6 +254,7 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
 
     return buckets
 
+
 def buckets_to_rows(
     buckets: dict[str, list],
     single_end: str,
@@ -278,7 +277,9 @@ def buckets_to_rows(
                 f"[{context}] PE experiment is missing fastq_2 for fastq_1={f1!r}; "
                 "single_end kept as 'false' from metadata — check for missing R2 file."
             )
-        file_rows.append({"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": single_end})
+        file_rows.append(
+            {"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": single_end}
+        )
 
     def _stem(path: str) -> str:
         """Strip directory and all extensions to get a bare basename for index matching."""
@@ -291,7 +292,7 @@ def buckets_to_rows(
         return os.path.splitext(base)[0]
 
     # Build stem --> path maps for index files so BAM/CRAM can look up their index
-    bai_by_stem  = {_stem(p): p for p in buckets["bai"]}
+    bai_by_stem = {_stem(p): p for p in buckets["bai"]}
     crai_by_stem = {_stem(p): p for p in buckets["crai"]}
 
     for bam in buckets["bam"]:
@@ -306,7 +307,9 @@ def buckets_to_rows(
         file_rows.append({"vcf": vcf, "single_end": single_end})
 
     if buckets["other"] and not file_rows:
-        file_rows.append({"data_files": ";".join(buckets["other"]), "single_end": single_end})
+        file_rows.append(
+            {"data_files": ";".join(buckets["other"]), "single_end": single_end}
+        )
 
     # Return None when no files were found so the caller can skip the row
     # rather than writing a metadata-only row with no usable file inputs.
@@ -315,9 +318,11 @@ def buckets_to_rows(
 
     return file_rows
 
+
 #########################
 #####  Main parser  #####
 #########################
+
 
 def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
     with open(metadata_path) as f:
@@ -333,7 +338,7 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
             continue
 
         ### Individual
-        ind_ref    = sample.get("individual", "")
+        ind_ref = sample.get("individual", "")
         individual = idx["individuals"].get(ind_ref, {})
         individual_id = individual.get("alias") or ind_ref or ""
 
@@ -358,11 +363,11 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
         seen_names: set[str] = set()
 
         for experiment in idx["sample_to_experiments"].get(sample_alias, []):
-            exp_alias       = experiment.get("alias", "")
-            em_alias        = experiment.get("experiment_method", "")
-            exp_method      = idx["exp_methods"].get(em_alias, {})
-            exp_method_name = get_method(exp_method)      # captured for this experiment
-            single_end      = get_single_end(exp_method)  # captured for this experiment
+            exp_alias = experiment.get("alias", "")
+            em_alias = experiment.get("experiment_method", "")
+            exp_method = idx["exp_methods"].get(em_alias, {})
+            exp_method_name = get_method(exp_method)  # captured for this experiment
+            single_end = get_single_end(exp_method)  # captured for this experiment
 
             ### Raw files – tagged with this experiment's provenance
             for rdf in idx["exp_to_rdfs"].get(exp_alias, []):
@@ -374,16 +379,20 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 
             ### Process files – tagged with their specific analysis provenance
             for analysis in idx["exp_to_analyses"].get(exp_alias, []):
-                analysis_alias  = analysis.get("alias", "")
-                am_alias        = analysis.get("analysis_method", "")
-                am_record       = idx["analysis_methods"].get(am_alias, {})
-                ana_method_name = get_analysis_method(am_record)  # captured for this analysis
+                analysis_alias = analysis.get("alias", "")
+                am_alias = analysis.get("analysis_method", "")
+                am_record = idx["analysis_methods"].get(am_alias, {})
+                ana_method_name = get_analysis_method(
+                    am_record
+                )  # captured for this analysis
 
                 for pdf in idx["analysis_to_pdfs"].get(analysis_alias, []):
                     name = pdf.get("name") or pdf.get("alias") or ""
                     if name and name not in seen_names:
                         seen_names.add(name)
-                        sample_files.append((pdf, exp_method_name, ana_method_name, single_end))
+                        sample_files.append(
+                            (pdf, exp_method_name, ana_method_name, single_end)
+                        )
 
         if not sample_files:
             warnings.append(
@@ -394,10 +403,10 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 
         ### Resolve ana_method_name for raw files (am=None) using the most
         ### common analysis method seen for this sample; ties broken by first seen.
-        ana_counts = Counter(
-            am for _, _, am, _ in sample_files if am is not None
+        ana_counts = Counter(am for _, _, am, _ in sample_files if am is not None)
+        dominant_ana_method = (
+            ana_counts.most_common(1)[0][0] if ana_counts else "unknown"
         )
-        dominant_ana_method = ana_counts.most_common(1)[0][0] if ana_counts else "unknown"
 
         resolved_files = [
             (f, em, am if am is not None else dominant_ana_method, se)
@@ -412,8 +421,8 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 
         ### Classify and emit once — single lane counter for the whole sample
         all_file_records = [f for f, _, _, _ in resolved_files]
-        context   = sample_alias
-        buckets   = classify_files(all_file_records, input_directory)
+        context = sample_alias
+        buckets = classify_files(all_file_records, input_directory)
         file_rows = buckets_to_rows(buckets, row_single_end, warnings, context)
 
         if file_rows is None:
@@ -424,17 +433,17 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
             continue
 
         base = {
-            "sample":               sample_alias,
-            "individual_id":        individual_id,
-            "sex":                  sex,
-            "status":               status,
-            "phenotype":            phenotype,
-            "sample_type":          sample.get("type", ""),
-            "disease_status":       sample.get("disease_or_healthy", ""),
-            "case_control_status":  sample.get("case_control_status", ""),
-            "tissue":               sample.get("biospecimen_tissue_term", ""),
-            "experiment_method":    row_exp_method,
-            "analysis_method":      row_ana_method,
+            "sample": sample_alias,
+            "individual_id": individual_id,
+            "sex": sex,
+            "status": status,
+            "phenotype": phenotype,
+            "sample_type": sample.get("type", ""),
+            "disease_status": sample.get("disease_or_healthy", ""),
+            "case_control_status": sample.get("case_control_status", ""),
+            "tissue": sample.get("biospecimen_tissue_term", ""),
+            "experiment_method": row_exp_method,
+            "analysis_method": row_ana_method,
         }
 
         for lane_num, frow in enumerate(file_rows, start=1):
@@ -443,6 +452,7 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 
     if warnings:
         import sys
+
         print(f"\n{len(warnings)} validation warning(s):", file=sys.stderr)
         for w in warnings:
             print(f"  WARNING: {w}", file=sys.stderr)
@@ -455,11 +465,27 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
 ####################
 
 ALL_COLUMNS = [
-    "sample", "lane", "individual_id", "sex", "status", "phenotype",
-    "sample_type", "disease_status", "case_control_status", "tissue",
-    "experiment_method", "analysis_method",
-    "fastq_1", "fastq_2", "single_end",
-    "bam", "bai", "cram", "crai", "vcf", "data_files",
+    "sample",
+    "lane",
+    "individual_id",
+    "sex",
+    "status",
+    "phenotype",
+    "sample_type",
+    "disease_status",
+    "case_control_status",
+    "tissue",
+    "experiment_method",
+    "analysis_method",
+    "fastq_1",
+    "fastq_2",
+    "single_end",
+    "bam",
+    "bai",
+    "cram",
+    "crai",
+    "vcf",
+    "data_files",
 ]
 
 # Columns that must be written as lowercase "true"/"false" strings to match
@@ -492,16 +518,16 @@ if __name__ == "__main__":
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
+    parser.add_argument("metadata", help="Path to GHGA metadata.json")
     parser.add_argument(
-        "metadata", help="Path to GHGA metadata.json"
+        "--output",
+        default="samplesheet.csv",
+        help="Output CSV path (default: samplesheet.csv)",
     )
     parser.add_argument(
-        "--output", default="samplesheet.csv",
-        help="Output CSV path (default: samplesheet.csv)"
-    )
-    parser.add_argument(
-        "--input_directory", default="",
-        help="Optional prefix directory prepended to all file names in the output"
+        "--input_directory",
+        default="",
+        help="Optional prefix directory prepended to all file names in the output",
     )
     args = parser.parse_args()
 
