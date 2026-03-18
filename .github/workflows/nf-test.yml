@@ -61,14 +61,15 @@ jobs:
           profile: ${{ matrix.profile }}
           shard: ${{ matrix.shard }}
           total_shards: ${{ needs.nf-test-changes.outputs.total_shards }}
-          paths: "."
 
   confirm-pass:
     needs: [nf-test]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Check Status
-        run: |
-          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then exit 1; fi
-          if [[ "${{ contains(needs.*.result, 'cancelled') }}" == "true" ]]; then exit 1; fi
+      - name: All tests ok
+        if: ${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+        run: exit 0
+      - name: Tests failed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
+        run: exit 1

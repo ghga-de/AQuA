@@ -28,21 +28,36 @@ runs:
       id: shards
       shell: bash
       run: |
+        # Identify the target branch (usually main or master)
         DIFF_TARGET=${{ github.base_ref || 'main' }}
         
-        nftest_output=$(nf-test test \
+        # Explicitly fetch the target branch so git knows what it is
+        echo "Fetching origin/$DIFF_TARGET..."
+        git fetch origin $DIFF_TARGET --depth=1
+
+        # Run nf-test dry-run and pipe to a file so we can parse it
+        # We compare against origin/$DIFF_TARGET
+        nf-test test \
           --profile +docker \
           --dry-run \
           --ci \
-          --changed-since $DIFF_TARGET)
+          --changed-since origin/$DIFF_TARGET > nftest_out.txt 2>&1 || {
+            cat nftest_out.txt
+            echo "nf-test dry-run failed."
+            exit 1
+          }
+        
+        cat nftest_out.txt
 
         shard="[]"
         total_shards=0
 
-        if echo "$nftest_output" | grep -q 'No tests to execute'; then
+        if grep -q 'No tests to execute' nftest_out.txt; then
           echo "No changed tests found."
         else
-          num_tests=$(echo "$nftest_output" | grep "Executed" | awk '{print $2}')
+          # Extract the number of tests from the 'Executed X tests' line
+          num_tests=$(grep "Executed" nftest_out.txt | awk '{print $2}')
+          
           if [[ -n "$num_tests" && "$num_tests" -gt 0 ]]; then
             shards_to_run=$(( num_tests < ${{ inputs.max_shards }} ? num_tests : ${{ inputs.max_shards }} ))
             shard=$(seq 1 "$shards_to_run" | jq -R . | jq -c -s .)
