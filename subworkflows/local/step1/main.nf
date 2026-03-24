@@ -17,11 +17,11 @@ workflow STEP1 {
     ch_multiqc_files = Channel.empty()
 
     ch_no_pacbio = samplesheet.filter { meta, reads ->
-        !(meta.experiment_method?.toLowerCase() in ["pacbio", "rna", "methylseq"])
+        !(meta.experiment_method?.toLowerCase() in ["pacbio"])
     }
 
     ch_nanoplot_in = samplesheet.filter { meta, reads ->
-        meta.experiment_method?.toLowerCase() in ["nanopore"]
+        meta.experiment_method?.toLowerCase() in ["nanopore", "pacbio"]
     }
 
     //  Runs FASTQC

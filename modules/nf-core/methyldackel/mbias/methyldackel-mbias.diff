@@ -1,0 +1,20 @@
+Changes in component 'nf-core/methyldackel/mbias'
+'modules/nf-core/methyldackel/mbias/environment.yml' is unchanged
+'modules/nf-core/methyldackel/mbias/meta.yml' is unchanged
+Changes in 'methyldackel/mbias/main.nf':
+--- modules/nf-core/methyldackel/mbias/main.nf
++++ modules/nf-core/methyldackel/mbias/main.nf
+@@ -8,8 +8,7 @@
+         'biocontainers/methyldackel:0.6.1--he4a0461_7' }"
+ 
+     input:
+-    tuple val(meta), path(bam)
+-    tuple val(meta2), path(bai)
++    tuple val(meta), path(bam), path(bai)
+     tuple val(meta3), path(fasta)
+     tuple val(meta4), path(fai)
+ 
+
+'modules/nf-core/methyldackel/mbias/tests/main.nf.test' is unchanged
+'modules/nf-core/methyldackel/mbias/tests/main.nf.test.snap' is unchanged
+************************************************************

@@ -2,6 +2,7 @@
 // STEP3: ANALYSIS TOOLS FOR VCF/BCF FILES
 //
 
+include { TABIX_BGZIP    } from '../../../modules/nf-core/tabix/bgzip/main'
 include { TABIX_TABIX    } from '../../../modules/nf-core/tabix/tabix/main'
 include { BCFTOOLS_STATS } from '../../../modules/nf-core/bcftools/stats/main'
 
@@ -15,10 +16,18 @@ workflow STEP3 {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    // Runs BCFTOOLS_STATS 
-    // TODO add support for vcf and bcf-bcf.gz
+    samplesheet.branch { meta, vcf ->
+            compressed: vcf.getName().endsWith('.gz')
+            uncompressed: true
+        }.set { ch_branched_vcfs }
+
+    TABIX_BGZIP(
+        ch_branched_vcfs.uncompressed
+    )
+    ch_ready_vcfs = ch_branched_vcfs.compressed.mix(TABIX_BGZIP.out.output)
+
     TABIX_TABIX(
-        samplesheet
+        ch_ready_vcfs
     )
     ch_versions = ch_versions.mix(TABIX_TABIX.out.versions)
 

@@ -27,16 +27,17 @@ The pipeline automatically selects the appropriate quality control tools based o
 
 The following table details which tools are executed based on the analysis method and input data type provided in the samplesheet.
 
-| Analysis Method     | Read QC (FastQ)      | Alignment QC (BAM/CRAM)                                           | Variant QC (VCF) |
-| :------------------ | :------------------- | :---------------------------------------------------------------- | :--------------- |
-| **WGS**             | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, NGS-Bits\*, Preseq | BCFTools Stats   |
-| **WES / TES**       | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, Preseq             | BCFTools Stats   |
-| **ATAC-Seq**        | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, Ataqv, Preseq                   | BCFTools Stats   |
-| **ChIP-Seq**        | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Phantompeakqualtools, Preseq            | BCFTools Stats   |
-| **RNA-Seq / smRNA** | FastQC, FastP, SeqFU | RSeQC, Preseq                                                     | BCFTools Stats   |
-| **Nanopore**        | FastQC, NanoPlot     | -                                                                 | BCFTools Stats   |
-| **PacBio**          | FastPLong            | -                                                                 | BCFTools Stats   |
-| **MethylSeq**       | FastQC, FastP, SeqFU | Samtools Stats                                                    | BCFTools Stats   |
+| Analysis Method | Read QC (FastQ) | Alignment QC (BAM/CRAM) | Variant QC (VCF) |
+| :--- | :--- | :--- | :--- |
+| **WGS** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, NGSBits, Preseq | BCFTools Stats |
+| **WES / TES** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, Preseq | BCFTools Stats |
+| **ATAC Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Ataqv, Preseq | |
+| **ChIP Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Phantompeakqualtools, Preseq |  |
+| **RNA Seq / smRNA** | FastQC, SeqFU | Samtools Stats, RSeQC, Preseq | BCFTools Stats |
+| **Nanopore** | FastQC, FastP, SeqFU, NanoPlot | Mosdepth, Samtools Stats, Cramino | BCFTools Stats |
+| **PacBio** | FastQC, NanoPlot | Mosdepth, Samtools Stats, Cramino | BCFTools Stats |
+| **MethylSeq** | FastQC, SeqFU | Mosdepth, Samtools Stats, MethylDackel |  |
+| **cfDNA / Other** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard | BCFTools Stats |
 
 ## Usage
 
@@ -118,46 +119,52 @@ nextflow run main.nf \
 
 ### Read QC
 
-- [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/): Basic quality control checks for raw sequence data.
-- [**FastP**](https://github.com/OpenGene/fastp): A fast processor used to generate read metrics for quality control.
-- [**SeqFU**](https://telatin.github.io/seqfu2/): Tools for gathering sequence statistics and metadata.
-- [**NanoPlot**](https://github.com/wdecoster/NanoPlot): Specialized plotting for long read sequencing data.
-- [**FastPLong**](https://github.com/OpenGene/fastplong): Quality control specifically for PacBio and other long read data.
+* [**FastQC**](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/): Basic quality control checks for raw sequence data.
+* [**FastP**](https://github.com/OpenGene/fastp): A fast processor used to generate read metrics for quality control.
+* [**SeqFU**](https://telatin.github.io/seqfu2/): Tools for gathering sequence statistics and metadata.
+* [**NanoPlot**](https://github.com/wdecoster/NanoPlot): Specialized plotting for long read sequencing data.
+* [**FastPLong**](https://github.com/OpenGene/fastplong): Quality control specifically for PacBio and other long read data.
 
 ### Alignment QC
 
-- [**Mosdepth**](https://github.com/brentp/mosdepth): Fast depth calculation for BAM or CRAM files using target intervals for specific assays.
-- [**Samtools Stats**](http://www.htslib.org/doc/samtools.html): Comprehensive statistics for alignment files.
-- [**Picard CollectMultipleMetrics**](https://broadinstitute.github.io/picard/): Metrics for DNA library quality and fragmentation.
-- [**Ataqv**](https://github.com/ParkerLab/ataqv): Specialized quality control for ATAC sequencing experiments.
-- [**Phantompeakqualtools**](https://github.com/kundajelab/phantompeakqualtools): Tools for quality control of ChIP sequencing datasets.
-- [**RSeQC**](http://rseqc.sourceforge.net/): A quality control package designed for RNA sequencing experiments.
-- [**Preseq**](https://github.com/smithlabcode/preseq): Software to estimate library complexity and duplication.
-- [**VerifyBamID**](https://github.com/Griffan/VerifyBamID): Estimation of DNA contamination using ancestry agnostic methods.
-- [**NGSBits SampleGender**](https://github.com/imgag/ngs-bits): Determination of biological sex based on sequencing coverage.
+* [**Mosdepth**](https://github.com/brentp/mosdepth): Fast depth calculation for BAM or CRAM files using target intervals for specific assays.
+* [**Samtools Stats**](http://www.htslib.org/doc/samtools.html): Comprehensive statistics for alignment files.
+* [**Picard CollectMultipleMetrics**](https://broadinstitute.github.io/picard/): Metrics for DNA library quality and fragmentation.
+* [**Ataqv**](https://github.com/ParkerLab/ataqv): Specialized quality control for ATAC sequencing experiments.
+* [**Phantompeakqualtools**](https://github.com/kundajelab/phantompeakqualtools): Tools for quality control of ChIP sequencing datasets.
+* [**RSeQC**](http://rseqc.sourceforge.net/): A quality control package designed for RNA sequencing experiments.
+* [**Preseq**](https://github.com/smithlabcode/preseq): Software to estimate library complexity and duplication.
+* [**VerifyBamID**](https://github.com/Griffan/VerifyBamID): Estimation of DNA contamination using ancestry agnostic methods.
+* [**NGSBits SampleGender**](https://github.com/imgag/ngs-bits): Determination of biological sex based on sequencing coverage.
+* [**Cramino**](https://github.com/wdecoster/cramino): Extremely fast quality control tool for long read alignment files.
+* [**MethylDackel**](https://github.com/dpryan79/MethylDackel): Quality metric extractor for bisulfite converted methylation sequencing data.
 
 ### Variant QC
 
-- [**BCFTools Stats**](http://samtools.github.io/bcftools/bcftools.html): Detailed statistics and metrics for VCF and BCF files.
+* [**BCFTools Stats**](http://samtools.github.io/bcftools/bcftools.html): Detailed statistics and metrics for VCF and BCF files.
 
 ### Reporting
 
-- [**MultiQC**](http://multiqc.info/): A tool that combines all quality control results into one interactive report.
-- [**MultiQC-mapper**](https://github.com/MKoesters/multiqc-mapper): A tool unifies QC reports to report back to the GHGA dataportal.
+* [**MultiQC**](http://multiqc.info/): A tool that combines all quality control results into one interactive report.
+* [**MultiQC mapper**](https://github.com/MKoesters/multiqc-mapper): A tool unifies QC reports to report back to the GHGA dataportal.
 
 ## Credits
 
-GHGA AQuA nextflow pipeline was originally written by Kubra Narci @kubranarci.
+GHGA AQuA nextflow pipeline was originally written by Kubra Narci.
 
-Current development team: - Manuel Kösters - Virag Sharma - Ruchi Tanavade
+Current development team:
+* Kubra Narci
+* Manuel Kösters
+* Virag Sharma
+* Ruchi Tanavade
 
 ## Contributions and Support
 
-If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
+If you would like to contribute to this pipeline, please see the contributing guidelines.
 
 ## Citations
 
-An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
+An extensive list of references for the tools used by the pipeline can be found in the CITATIONS.md file. This pipeline uses code and infrastructure developed and maintained by the nf core community.
 
 This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/main/LICENSE).
 

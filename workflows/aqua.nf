@@ -66,6 +66,7 @@ workflow AQUA {
 
     // STEP 1 // FASTQ FILE ANALYSIS //
 
+    // TODO: ADD fast5.tar.gz support for nanopore data
     ch_pacbio_step2 = samplesheet.step2.filter { meta, bam, bai -> meta.experiment_method?.toLowerCase() in ["pacbio"] }
     ch_pacbio_step1 = samplesheet.step1.filter { meta, reads -> meta.experiment_method?.toLowerCase() in ["pacbio"] }
     //
@@ -96,6 +97,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP1.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP1.out.ch_multiqc_files)
 
+    // TODO: ch_intervals should be library spesific! check which file that is
     STEP2(
         samplesheet.step2,
         ch_fasta,
@@ -106,6 +108,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP2.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP2.out.ch_multiqc_files)
 
+    // step 3 only targets vcf and bcf files for now
     STEP3(
         samplesheet.step3,
         ch_fasta,

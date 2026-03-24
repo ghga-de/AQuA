@@ -11,8 +11,10 @@ include { PRESEQ_LCEXTRAP               } from '../../../modules/nf-core/preseq/
 include { NGSBITS_SAMPLEGENDER          } from '../../../modules/nf-core/ngsbits/samplegender/main'
 include { PICARD_COLLECTMULTIPLEMETRICS } from '../../../modules/nf-core/picard/collectmultiplemetrics/main'
 include { VERIFYBAMID_VERIFYBAMID       } from '../../../modules/nf-core/verifybamid/verifybamid/main'
-include { ATAQV_ATAQV                     } from '../../../modules/nf-core/ataqv/ataqv/main'
-include { PHANTOMPEAKQUALTOOLS            } from '../../../modules/nf-core/phantompeakqualtools/main'
+include { ATAQV_ATAQV                   } from '../../../modules/nf-core/ataqv/ataqv/main'
+include { PHANTOMPEAKQUALTOOLS          } from '../../../modules/nf-core/phantompeakqualtools/main'
+include { CRAMINO                       } from '../../../modules/nf-core/cramino/main'
+include { METHYLDACKEL_MBIAS            } from '../../../modules/nf-core/methyldackel/mbias/main'
 
 workflow STEP2 {
     take:
@@ -37,11 +39,7 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-    ch_bam_for_metrics = samplesheet.filter { meta, bam, index -> 
-        !(meta.experiment_method?.toLowerCase() in ["pacbio"]) 
-    }
-
-    ch_bam_for_metrics.branch { meta, bam, index ->
+    samplesheet.branch { meta, bam, index ->
         has_index: index
         no_index: !index
     }.set { ch_bam_indexed_split }
@@ -69,6 +67,7 @@ workflow STEP2 {
         meth:   meta.experiment_method?.toLowerCase() in ['methylation', 'methylseq']
         chip:   meta.experiment_method?.toLowerCase() in ['chip_seq', 'chipseq', 'chip']
         cfdna:  meta.experiment_method?.toLowerCase() in ['cfdna', 'other']
+        longread: meta.experiment_method?.toLowerCase() in ['nanopore', 'pacbio']
     }.set { ch_assay_split }
 
 
@@ -82,7 +81,7 @@ workflow STEP2 {
     }
 
     // Picard Multiple Metrics: Best for standard DNA fragmentation
-    ch_picard_multi_in = ch_assay_split.wgs.mix(ch_assay_split.wes, ch_assay_split.cfdna, ch_assay_split.atac)
+    ch_picard_multi_in = ch_assay_split.wgs.mix(ch_assay_split.wes, ch_assay_split.cfdna)
     if (!params.skip_tools?.contains('picard_collectmultiplemetrics')) {
         PICARD_COLLECTMULTIPLEMETRICS(
             ch_picard_multi_in,
@@ -96,8 +95,8 @@ workflow STEP2 {
     // Mosdepth: WGS needs no intervals while targeted methods need intervals
     if (!params.skip_tools?.contains('mosdepth')) {
         
-        // Prepare targeted samples (WES, ATAC, CHIP)
-        ch_mosdepth_targeted = ch_assay_split.wes.mix(ch_assay_split.atac, ch_assay_split.chip)
+        // Prepare targeted samples (WES, ATAC, CHIP, Methylation) - combine with intervals if provided, if not add empty list as placeholder
+        ch_mosdepth_targeted = ch_assay_split.wes.mix(ch_assay_split.atac, ch_assay_split.chip, ch_assay_split.meth)
             .combine(ch_intervals.ifEmpty([[:], []])) 
             .map { meta, file, index, meta_int, intervals -> 
                 def final_intervals = intervals instanceof List ? [] : intervals
@@ -105,7 +104,7 @@ workflow STEP2 {
             }
         
         // Prepare other samples (WGS, cfDNA)
-        ch_mosdepth_other = ch_assay_split.wgs.mix(ch_assay_split.cfdna)
+        ch_mosdepth_other = ch_assay_split.wgs.mix(ch_assay_split.cfdna, ch_assay_split.longread)
             .map { meta, file, index -> tuple(meta, file, index, []) }
 
         // Combine both streams
@@ -135,7 +134,7 @@ workflow STEP2 {
     ch_verifybamid_bam_only = ch_verifybamid_in.filter { meta, file, index -> 
         file.name.endsWith('.bam') 
     }
-        
+    // TODO, VerifyBamID might be usefull especially for cancer analyiis, find a way to extract it from metadata     
     if (ch_refvcf){
         if (!params.skip_tools?.contains('verifybamid')) {
             VERIFYBAMID_VERIFYBAMID(
@@ -164,6 +163,16 @@ workflow STEP2 {
         ch_multiqc_files = ch_multiqc_files.mix(ATAQV_ATAQV.out.json.map { _meta, file -> file }.collect())
     }
 
+        if (!params.skip_tools?.contains('methyldackel')) {
+        METHYLDACKEL_MBIAS(
+            ch_assay_split.meth,
+            ch_fasta,
+            ch_fai,
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(METHYLDACKEL_MBIAS.out.plots.map { _meta, file -> file }.collect())
+        ch_versions = ch_versions.mix(METHYLDACKEL_MBIAS.out.versions)
+    }
+
     if (!params.skip_tools?.contains('phantompeakqualtools')) {
         PHANTOMPEAKQUALTOOLS(
             ch_assay_split.chip.map { meta, bam, bai -> tuple(meta, bam) }
@@ -172,6 +181,7 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(PHANTOMPEAKQUALTOOLS.out.versions)
     }
 
+    // TODO: find a way to extract gender, run this only if it is missing
     if (!params.skip_tools?.contains('ngsbits_samplegender')) {
          NGSBITS_SAMPLEGENDER(
              ch_assay_split.wgs,
@@ -182,6 +192,14 @@ workflow STEP2 {
          ch_multiqc_files = ch_multiqc_files.mix(NGSBITS_SAMPLEGENDER.out.tsv.map { _meta, file -> file }.collect())
          ch_versions = ch_versions.mix(NGSBITS_SAMPLEGENDER.out.versions)
     }
+
+    if (!params.skip_tools?.contains('cramino')) {
+         CRAMINO(
+             ch_assay_split.longread
+         )
+         ch_multiqc_files = ch_multiqc_files.mix(CRAMINO.out.stats.map { _meta, file -> file }.collect())
+         ch_multiqc_files = ch_multiqc_files.mix(CRAMINO.out.arrow.map { _meta, file -> file }.collect())
+     }
 
     emit:
     ch_versions          = ch_versions
