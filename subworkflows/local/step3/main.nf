@@ -9,7 +9,8 @@ include { BCFTOOLS_STATS } from '../../../modules/nf-core/bcftools/stats/main'
 workflow STEP3 {
     take:
     samplesheet // channel: [val(meta), vcf]
-    ch_fasta
+    ch_fasta    // reference: [val(meta), .fasta]
+    tools       // list of tools to run
 
     main:
 
@@ -36,7 +37,7 @@ workflow STEP3 {
     samples = [[], []]
     exons = [[], []]
 
-    if (!params.skip_tools?.contains('bcftools_stats')) {
+    if (tools?.contains('bcftools_stats')) {
         BCFTOOLS_STATS(
             samplesheet.join(TABIX_TABIX.out.tbi),
             regions,

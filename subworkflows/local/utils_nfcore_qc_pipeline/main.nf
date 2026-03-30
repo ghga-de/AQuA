@@ -73,7 +73,7 @@ workflow PIPELINE_INITIALISATION {
         .flatMap { samplesheet_file ->
             samplesheetToList(samplesheet_file, "${projectDir}/assets/schema_input.json")
         }
-        .map { meta, fastq_1, fastq_2, cram, crai, bam, bai, vcf ->
+        .map { meta, fastq_1, fastq_2, cram, crai, bam, bai, vcf, others ->
             if (fastq_1) {
                 if (fastq_2) {
                     return [meta + [single_end: false, step: 1], [fastq_1, fastq_2]]
@@ -88,8 +88,15 @@ workflow PIPELINE_INITIALISATION {
             else if (bam) {
                 return [meta + [step: 2], bam, bai]
             }
-            else {
+            else if (vcf) {
                 return [meta + [step: 3], vcf]
+            }
+            else if (others){ 
+                return [meta + [step: 4], others]
+            }
+            else{
+                log.warn "Row for sample ${meta.id} does not contain any recognized files."
+                return [meta, null]                
             }
         }
         .set { ch_samplesheet }

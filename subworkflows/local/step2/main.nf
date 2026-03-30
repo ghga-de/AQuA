@@ -4,32 +4,38 @@
 
 include { SAMTOOLS_FAIDX                } from '../../../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_INDEX                } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_STATS                } from '../../../modules/nf-core/samtools/stats/main'
 include { MOSDEPTH                      } from '../../../modules/nf-core/mosdepth/main'
 include { RSEQC_BAMSTAT                 } from '../../../modules/nf-core/rseqc/bamstat/main'
 include { PRESEQ_LCEXTRAP               } from '../../../modules/nf-core/preseq/lcextrap/main'
 include { NGSBITS_SAMPLEGENDER          } from '../../../modules/nf-core/ngsbits/samplegender/main'
-include { PICARD_COLLECTMULTIPLEMETRICS } from '../../../modules/nf-core/picard/collectmultiplemetrics/main'
+include { SAMBAMBA_FLAGSTAT             } from '../../../modules/nf-core/sambamba/flagstat/main'
 include { VERIFYBAMID_VERIFYBAMID       } from '../../../modules/nf-core/verifybamid/verifybamid/main'
 include { ATAQV_ATAQV                   } from '../../../modules/nf-core/ataqv/ataqv/main'
 include { PHANTOMPEAKQUALTOOLS          } from '../../../modules/nf-core/phantompeakqualtools/main'
 include { CRAMINO                       } from '../../../modules/nf-core/cramino/main'
 include { METHYLDACKEL_MBIAS            } from '../../../modules/nf-core/methyldackel/mbias/main'
+include { SAMTOOLS_STATS as SAMTOOLS_STATS_BAMS } from '../../../modules/nf-core/samtools/stats/main'
+include { SAMTOOLS_STATS as SAMTOOLS_STATS_CRAMS} from '../../../modules/nf-core/samtools/stats/main'
 
 workflow STEP2 {
     take:
-    samplesheet  
-    ch_fasta
-    ch_fai
-    ch_intervals
-    ch_refvcf
+    samplesheet   // channel: [val(meta), bam, bai]
+    ch_fasta      // reference: [val(meta), .fasta]
+    ch_fai        // reference: [val(meta), .fai]
+    ch_intervals  // reference: [val(meta), .bed]
+    ch_refvcf     // reference: [val(meta), .vcf]
+    tools         // list of tools to run
 
     main:
 
     ch_versions      = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    if (!params.fasta_fai){
+    def needs_fai = tools.contains('picard_collectmultiplemetrics') || 
+                    tools.contains('methyldackel') || 
+                    tools.contains('ngsbits_samplegender')
+
+    if (!params.fasta_fai && needs_fai) {
         SAMTOOLS_FAIDX(
             ch_fasta,
             [[],[]],
@@ -54,10 +60,47 @@ workflow STEP2 {
 
     ch_final_bam_indexed = ch_bam_indexed_split.has_index.mix(ch_newly_indexed)
 
-    // ========================================================
-    // MASTER BRANCHING BY EXPERIMENT METHOD
-    // ========================================================
+    // SAMTOOLS STATS AND SAMTOOLS FLAGSTATS CAN RUN ALL ANALYSIS TYPES
+    if (tools.contains('samtools_stats')) {
+        SAMTOOLS_STATS(
+            ch_final_bam_indexed,
+            ch_fasta
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_STATS.out.stats.map { _meta, file -> file }.collect())
+        ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
+    }
 
+    if (tools.contains('sambamba_flagstat')) {
+        // CRAM files crashing Sambamba
+        ch_final_bam_indexed.branch { meta, file, index -> 
+            bams:  file.name.endsWith('.bam')
+            crams: file.name.endsWith('.cram')
+        }.set { ch_flagstat_split }
+
+        SAMBAMBA_FLAGSTAT(
+            ch_flagstat_split.bams.map{meta, bam, _bai -> [meta, bam]}
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(SAMBAMBA_FLAGSTAT.out.stats.map { _meta, file -> file }.collect())
+
+        // only option for cram is to use samtools stats!
+        SAMTOOLS_STATS_CRAMS(
+            ch_flagstat_split.crams,
+            ch_fasta
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_STATS_CRAMS.out.stats.map { _meta, file -> file }.collect())
+        ch_versions = ch_versions.mix(SAMTOOLS_STATS_CRAMS.out.versions)
+    }
+    // SAMTOOLS STATS AND SAMBAMBA FLAGSTATS CAN RUN ALL ANALYSIS TYPES
+    if (tools.contains('samtools_stats')) {
+        SAMTOOLS_STATS_BAMS(
+            ch_final_bam_indexed,
+            ch_fasta
+        )
+        ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_STATS_BAMS.out.stats.map { _meta, file -> file }.collect())
+        ch_versions = ch_versions.mix(SAMTOOLS_STATS_BAMS.out.versions)
+    }
+
+    // Branch out by analysis type
     ch_final_bam_indexed.branch { meta, bam, bai ->
         wgs:    meta.experiment_method?.toLowerCase() in ['wgs']
         wes:    meta.experiment_method?.toLowerCase() in ['wxs', 'wcs', 'wes', 'tes']
@@ -70,30 +113,8 @@ workflow STEP2 {
         longread: meta.experiment_method?.toLowerCase() in ['nanopore', 'pacbio']
     }.set { ch_assay_split }
 
-
-    if (!params.skip_tools?.contains('samtools_stats')) {
-        SAMTOOLS_STATS(
-            ch_final_bam_indexed,
-            ch_fasta
-        )
-        ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_STATS.out.stats.map { _meta, file -> file }.collect())
-        ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
-    }
-
-    // Picard Multiple Metrics: Best for standard DNA fragmentation
-    ch_picard_multi_in = ch_assay_split.wgs.mix(ch_assay_split.wes, ch_assay_split.cfdna)
-    if (!params.skip_tools?.contains('picard_collectmultiplemetrics')) {
-        PICARD_COLLECTMULTIPLEMETRICS(
-            ch_picard_multi_in,
-            ch_fasta,
-            ch_fai
-        )
-        ch_multiqc_files = ch_multiqc_files.mix(PICARD_COLLECTMULTIPLEMETRICS.out.metrics.map { _meta, file -> file }.collect())
-        ch_versions = ch_versions.mix(PICARD_COLLECTMULTIPLEMETRICS.out.versions)
-    }
-
     // Mosdepth: WGS needs no intervals while targeted methods need intervals
-    if (!params.skip_tools?.contains('mosdepth')) {
+    if (tools.contains('mosdepth')) {
         
         // Prepare targeted samples (WES, ATAC, CHIP, Methylation) - combine with intervals if provided, if not add empty list as placeholder
         ch_mosdepth_targeted = ch_assay_split.wes.mix(ch_assay_split.atac, ch_assay_split.chip, ch_assay_split.meth)
@@ -121,24 +142,22 @@ workflow STEP2 {
     }
 
     ch_preseq_in = ch_assay_split.wgs.mix(ch_assay_split.wes, ch_assay_split.rna, ch_assay_split.atac, ch_assay_split.chip)
-    if (!params.skip_tools?.contains('preseq')) {
+    if (tools.contains('preseq')) {
          PRESEQ_LCEXTRAP(
              ch_preseq_in
          )
          ch_multiqc_files = ch_multiqc_files.mix(PRESEQ_LCEXTRAP.out.lc_extrap.map { _meta, file -> file }.collect())
     }
-
     ch_verifybamid_in = ch_assay_split.wgs.mix(ch_assay_split.wes)
     
     // Filter out cram files so only bam files proceed
     ch_verifybamid_bam_only = ch_verifybamid_in.filter { meta, file, index -> 
         file.name.endsWith('.bam') 
     }
-    // TODO, VerifyBamID might be usefull especially for cancer analyiis, find a way to extract it from metadata     
     if (ch_refvcf){
-        if (!params.skip_tools?.contains('verifybamid')) {
+        if (tools.contains('verifybamid')) {
             VERIFYBAMID_VERIFYBAMID(
-                ch_verifybamid_bam_only,
+                status.tumor,
                 ch_refvcf     
             )
             ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfsm.map { _meta, file -> file }.collect())
@@ -146,7 +165,7 @@ workflow STEP2 {
             ch_versions = ch_versions.mix(VERIFYBAMID_VERIFYBAMID.out.versions)
         }
     }
-    if (!params.skip_tools?.contains('rseqc')) {
+    if (tools.contains('rseqc')) {
          RSEQC_BAMSTAT(
              ch_assay_split.rna.map { meta, bam, bai -> tuple(meta, bam) }
          )
@@ -154,7 +173,7 @@ workflow STEP2 {
          ch_versions = ch_versions.mix(RSEQC_BAMSTAT.out.versions)
     }
 
-    if (!params.skip_tools?.contains('ataqv')) {
+    if (tools.contains('ataqv')) {
         ATAQV_ATAQV(
             ch_assay_split.atac.map{ meta, bam, bai -> tuple(meta, bam, bai, []) },
             "human",
@@ -163,7 +182,7 @@ workflow STEP2 {
         ch_multiqc_files = ch_multiqc_files.mix(ATAQV_ATAQV.out.json.map { _meta, file -> file }.collect())
     }
 
-        if (!params.skip_tools?.contains('methyldackel')) {
+    if (tools.contains('methyldackel')) {
         METHYLDACKEL_MBIAS(
             ch_assay_split.meth,
             ch_fasta,
@@ -173,7 +192,7 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(METHYLDACKEL_MBIAS.out.versions)
     }
 
-    if (!params.skip_tools?.contains('phantompeakqualtools')) {
+    if (tools.contains('phantompeakqualtools')) {
         PHANTOMPEAKQUALTOOLS(
             ch_assay_split.chip.map { meta, bam, bai -> tuple(meta, bam) }
         )
@@ -181,8 +200,11 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(PHANTOMPEAKQUALTOOLS.out.versions)
     }
 
-    // TODO: find a way to extract gender, run this only if it is missing
-    if (!params.skip_tools?.contains('ngsbits_samplegender')) {
+    if (tools.contains('ngsbits_samplegender')) {
+        ch_ngsbits_in = ch_assay_split.wgs.filter { meta, bam, bai -> 
+            def sex = meta.sex?.toString()?.trim()?.toUpperCase()
+            return !sex || sex in ['NA', 'UNKNOWN', 'NULL', '']
+        }
          NGSBITS_SAMPLEGENDER(
              ch_assay_split.wgs,
              ch_fasta,
@@ -193,7 +215,7 @@ workflow STEP2 {
          ch_versions = ch_versions.mix(NGSBITS_SAMPLEGENDER.out.versions)
     }
 
-    if (!params.skip_tools?.contains('cramino')) {
+    if (tools.contains('cramino')) {
          CRAMINO(
              ch_assay_split.longread
          )

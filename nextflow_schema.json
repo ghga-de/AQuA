@@ -63,7 +63,6 @@
                             "fastp",
                             "fastplong",
                             "seqfu",
-                            "picard_collectmultiplemetrics",
                             "preseq",
                             "mosdepth",
                             "nanoplot",
@@ -73,14 +72,41 @@
                             "rseqc",
                             "phantompeakqualtools",
                             "ngsbits_samplegender",
-                            "picard_collectinsertsizemetrics",
+                            "ataqv",
+                            "methyldackel",
+                            "cramino",
+                            "sambamba_flagstat"
+                        ]
+                    },
+                    "description": "Tools to skip when running the pipeline.",
+                    "help_text": "If you want to skip any of the tools in the pipeline, you can specify them here. This is an array parameter, so you can specify multiple tools to skip."
+                },
+                "analysis_tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "fastqc",
+                            "fastp",
+                            "fastplong",
+                            "seqfu",
+                            "preseq",
+                            "mosdepth",
+                            "nanoplot",
+                            "samtools_stats",
+                            "sambamba_flagstat",
+                            "bcftools_stats",
+                            "verifybamid",
+                            "rseqc",
+                            "phantompeakqualtools",
+                            "ngsbits_samplegender",
                             "ataqv",
                             "methyldackel",
                             "cramino"
                         ]
                     },
-                    "description": "Tools to skip when running the pipeline.",
-                    "help_text": "If you want to skip any of the tools in the pipeline, you can specify them here. This is an array parameter, so you can specify multiple tools to skip."
+                    "description": "Tools to add when running the pipeline.",
+                    "help_text": "If you want to add any of the tools in the pipeline, you can specify them here. This is an array parameter, so you can specify multiple tools to add."
                 },
                 "samplegender_method": {
                     "type": "string",

@@ -27,17 +27,20 @@ The pipeline automatically selects the appropriate quality control tools based o
 
 The following table details which tools are executed based on the analysis method and input data type provided in the samplesheet.
 
-| Analysis Method | Read QC (FastQ) | Alignment QC (BAM/CRAM) | Variant QC (VCF) |
+| Analysis Method | Read QC (FastQ) | Alignment QC (BAM) | Variant QC (VCF) |
 | :--- | :--- | :--- | :--- |
-| **WGS** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, NGSBits, Preseq | BCFTools Stats |
-| **WES / TES** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard, VerifyBamID, Preseq | BCFTools Stats |
-| **ATAC Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Ataqv, Preseq | |
-| **ChIP Seq** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Phantompeakqualtools, Preseq |  |
-| **RNA Seq / smRNA** | FastQC, SeqFU | Samtools Stats, RSeQC, Preseq | BCFTools Stats |
-| **Nanopore** | FastQC, FastP, SeqFU, NanoPlot | Mosdepth, Samtools Stats, Cramino | BCFTools Stats |
-| **PacBio** | FastQC, NanoPlot | Mosdepth, Samtools Stats, Cramino | BCFTools Stats |
-| **MethylSeq** | FastQC, SeqFU | Mosdepth, Samtools Stats, MethylDackel |  |
-| **cfDNA / Other** | FastQC, FastP, SeqFU | Mosdepth, Samtools Stats, Picard | BCFTools Stats |
+| **WGS** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats, VerifyBamID, NGSBits, Preseq | *BCFTools Stats* |
+| **WES / TES** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats, Preseq | *BCFTools Stats* |
+| **ATAC Seq** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, *Ataqv*, Samtools Stats,  Preseq | |
+| **ChIP Seq** | *FastP*, FastQC, SeqFU | *Mosdepth*,*Sambamba flagstats*,*Phantompeakqualtools*, Samtools Stats, Preseq |  |
+| **RNA Seq / smRNA** | FastQC, SeqFU | *Samtools Stats*, *RSeQC*, Preseq | *BCFTools Stats* |
+| **Nanopore** | *FastPLong*,  *NanoPlot*, SeqFU | *Mosdepth*, *Sambamba flagstats*, *Cramino*, Samtools Stats | *BCFTools Stats* |
+| **PacBio** | *FastPLong*, *NanoPlot* | *Mosdepth*, *Cramino*, *Sambamba flagstats*, Samtools Stats | *BCFTools Stats* |
+| **MethylSeq** | *FastP*, FastQC, SeqFU | *Mosdepth*, *MethylDackel*, *Sambamba flagstats*, Samtools Stats |  |
+| **cfDNA / Other** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats | *BCFTools Stats* |
+
+> [!NOTE]
+> Tools in *Italic* are used as default, yet user can add tools to the analysis uisng --analysis_tools or remove default using --skip_tools. In the case of CRAM files, instead of sambamba flagstats, samtools stats is used default.
 
 ## Usage
 
@@ -128,8 +131,8 @@ nextflow run main.nf \
 ### Alignment QC
 
 * [**Mosdepth**](https://github.com/brentp/mosdepth): Fast depth calculation for BAM or CRAM files using target intervals for specific assays.
+* [**Sambamba Flagstats**](https://lomereiter.github.io/sambamba/docs/sambamba-flagstat.html): Comprehensive statistics for alignment files.
 * [**Samtools Stats**](http://www.htslib.org/doc/samtools.html): Comprehensive statistics for alignment files.
-* [**Picard CollectMultipleMetrics**](https://broadinstitute.github.io/picard/): Metrics for DNA library quality and fragmentation.
 * [**Ataqv**](https://github.com/ParkerLab/ataqv): Specialized quality control for ATAC sequencing experiments.
 * [**Phantompeakqualtools**](https://github.com/kundajelab/phantompeakqualtools): Tools for quality control of ChIP sequencing datasets.
 * [**RSeQC**](http://rseqc.sourceforge.net/): A quality control package designed for RNA sequencing experiments.

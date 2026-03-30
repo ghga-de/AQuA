@@ -7,18 +7,14 @@
 include { SAMTOOLS_FASTQ         } from '../modules/nf-core/samtools/fastq/main'
 include { FASTPLONG              } from '../modules/nf-core/fastplong/main'
 include { MULTIQCMAPPER          } from '../modules/local/multiqcmapper/main'
-
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
-
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_qc_pipeline'
 include { STEP1                  } from '../subworkflows/local/step1'
 include { STEP2                  } from '../subworkflows/local/step2'
 include { STEP3                  } from '../subworkflows/local/step3'
-
-
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,58 +56,76 @@ workflow AQUA {
             step1: meta.step == 1
             step2: meta.step == 2
             step3: meta.step == 3
-            other: false
+            other: true
         }
         .set { samplesheet }
 
-    // STEP 1 // FASTQ FILE ANALYSIS //
-
-    // TODO: ADD fast5.tar.gz support for nanopore data
-    ch_pacbio_step2 = samplesheet.step2.filter { meta, bam, bai -> meta.experiment_method?.toLowerCase() in ["pacbio"] }
-    ch_pacbio_step1 = samplesheet.step1.filter { meta, reads -> meta.experiment_method?.toLowerCase() in ["pacbio"] }
-    //
-    // // Convert read BAMs to FASTQs
-    def samtools_fastq_interleave = false
-    SAMTOOLS_FASTQ(
-        ch_pacbio_step2,
-        samtools_fastq_interleave,
-    )
-    ch_versions = ch_versions.mix(SAMTOOLS_FASTQ.out.versions)
-    //
-    // // Run fastplong for pacbio samples
-    if (!params.skip_tools?.contains('fastplong')) {
-        FASTPLONG(
-            SAMTOOLS_FASTQ.out.other.mix(ch_pacbio_step1),
-            [],
-            false,
-            false,
-        )
-        ch_multiqc_files = ch_multiqc_files.mix(FASTPLONG.out.json.collect { _meta, json -> json })
-        ch_multiqc_files = ch_multiqc_files.mix(FASTPLONG.out.html.collect { _meta, html -> html })
-        ch_versions = ch_versions.mix(FASTPLONG.out.versions)
+    def get_tool_list = { param ->
+        if (!param) return []
+        if (param instanceof CharSequence) return param.split(',').collect { it.trim().toLowerCase() }
+        if (param instanceof Collection) return param.collect { it.toString().trim().toLowerCase() }
+        return [] 
     }
 
+    def default_tools = ['fastp', 'fastplong', 'mosdepth', 'sambamba_flagstat', 'verifybamid', 'ngsbits_samplegender', 'ataqv', 'phantompeakqual', 'rseqc', 'cramino', 'methydackel', 'bcftools_stats']
+    def skipped_tools = get_tool_list(params.skip_tools)
+    def add_tools     = get_tool_list(params.analysis_tools)
+    
+    def tools = default_tools + add_tools - skipped_tools
+
+    // STEP 1 // FASTQ FILE ANALYSIS //
+    // TODO: ADD fast5.tar.gz support for nanopore data
+    //ch_long_step2 = samplesheet.step2.filter { meta, bam, bai -> meta.experiment_method?.toLowerCase() in ["pacbio", "nanopore"] }
+    //ch_long_step1 = samplesheet.step1.filter { meta, reads -> meta.experiment_method?.toLowerCase() in ["pacbio", "nanopore"] }
+    //
+    // // Convert read BAMs to FASTQs
+    //def samtools_fastq_interleave = false
+    //SAMTOOLS_FASTQ(
+    //    ch_long_step2,
+    //    samtools_fastq_interleave,
+    //)
+    //ch_versions = ch_versions.mix(SAMTOOLS_FASTQ.out.versions)
+    
+    // we dont have a method to analyse these files for now
+    samplesheet.other.filter { meta, file -> 
+        file.name.endsWith('.fast5') || file.name.endsWith('.fast5.tar.gz') || file.name.endsWith('.pod5')
+    }.set{nanopore_others}
+
+    samplesheet.other.filter { meta, file -> 
+        file.name.endsWith('sequencing_summary.txt')
+    }.set{nanopore_summary}    
+
     STEP1(
-        samplesheet.step1
+        samplesheet.step1,
+        tools,
+        nanopore_summary
     )
     ch_versions = ch_versions.mix(STEP1.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP1.out.ch_multiqc_files)
 
+    samplesheet.other.filter { meta, file -> 
+        file.name.endsWith('.sam') || file.name.endsWith('.bam') || file.name.endsWith('.cram')
+    }.set{aligned_others}
     // TODO: ch_intervals should be library spesific! check which file that is
     STEP2(
-        samplesheet.step2,
+        samplesheet.step2.mix(aligned_others),
         ch_fasta,
         ch_fai,
         ch_intervals,
         ch_refvcf,
+        tools
     )
     ch_versions = ch_versions.mix(STEP2.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP2.out.ch_multiqc_files)
 
+    samplesheet.other.filter { meta, file -> 
+        file.name.endsWith('.bcf') || file.name.endsWith('.vcf') || file.name.endsWith('.bcf.gz') || file.name.endsWith('.vcf.gz')
+    }.set{called_others}
     // step 3 only targets vcf and bcf files for now
     STEP3(
-        samplesheet.step3,
+        samplesheet.step3.mix(called_others),
         ch_fasta,
+        tools
     )
     ch_versions = ch_versions.mix(STEP3.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP3.out.ch_multiqc_files)

@@ -53,12 +53,6 @@
                 "type": "string",
                 "meta": ["analysis_method"]
             },
-            "data_files": {
-                "type": "string",
-                "minLength": 1,
-                "errorMessage": "Data files must be provided",
-                "meta": ["data_files"]
-            },
             "fastq_1": {
                 "type": "string",
                 "format": "file-path",
@@ -129,6 +123,13 @@
                 "type": "string",
                 "minLength": 1,
                 "pattern": "^\\S+\\.vcf(\\.gz)?$",
+                "format": "file-path",
+                "exists": true
+            },
+            "data_files": {
+                "type": "string",
+                "minLength": 1,
+                "errorMessage": "Data files must be provided",
                 "format": "file-path",
                 "exists": true
             }
