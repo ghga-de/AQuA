@@ -1,0 +1,163 @@
+%%metro title: ghga-de/AQuA
+%%metro style: light
+%%metro line_order: span
+%%metro legend: bl
+%%metro compact_offsets: true
+
+%% Bind icons
+%%metro file: metadata_file | JSON
+%%metro file: submission_path_file | STRING
+%%metro file: ref_genome_file | FASTA
+%%metro file: multiqc_out | HTML
+%%metro file: mapped_json_out | JSON
+
+%% Analysis Data Streams (Color Coded)
+%%metro line: input | Input Data | #ECEFF1
+%%metro line: wgs | WGS / WES / cfDNA | #4CAF50
+%%metro line: atac | ATAC-Seq | #2196F3
+%%metro line: chip | ChIP-Seq | #03A9F4
+%%metro line: methyl | Methyl-Seq | #00BCD4
+%%metro line: rna | RNA-Seq / smRNA | #FF9800
+%%metro line: long | Long Read (ONT/PB) | #9C27B0
+
+graph LR
+    subgraph inputs [Inputs]
+        metadata_file[ ]
+        submission_path_file[ ]
+        ref_genome_file[ ]
+        
+        metadata[Metadata]
+        path[Submission Path]
+        ref_genome[Reference Genomes]
+        
+        _input_gather[hidden]
+        _inputs_hub[hidden]
+
+        %% Link icons to text
+        metadata_file -->|input| metadata
+        submission_path_file -->|input| path
+        ref_genome_file -->|input| ref_genome
+
+        %% Gather inputs into a single hidden point to prevent vertical text squishing
+        metadata -->|input| _input_gather
+        path -->|input| _input_gather
+        ref_genome -->|input| _input_gather
+
+        %% Send one unified rainbow cable to the main hub
+        _input_gather -->|wgs,atac,chip,methyl,rna,long| _inputs_hub
+    end
+
+    subgraph step2 [Alignment QC]
+        samtools_stats[Samtools Stats]
+        preseq[Preseq]
+        mosdepth[Mosdepth]
+        verifybamid[VerifyBamID]
+        ngsbits[NGSBits]
+        ataqv[Ataqv]
+        phantompeakqual[PhantomPeak]
+        methydackel[MethylDackel]
+        rseqc[RSeQC]
+        cramino[Cramino]
+    end
+
+    subgraph step1 [Read QC]
+        fastqc[FastQC]
+        seqfu[SeqFU]
+        fastp[FastP]
+        fastplong[FastPLong]
+        nanoplot[NanoPlot]
+    end
+
+    subgraph step3 [Variant QC]
+        bcftools_stats[BCFTools Stats]
+    end
+    
+
+
+
+    subgraph reporting [Reporting & Output]
+        _report_hub[hidden]
+        multiqc[MultiQC]
+        multiqcmapper[MultiQC Mapper]
+        multiqc_out[ ]
+        mapped_json_out[ ]
+
+        _report_hub -->|wgs,atac,rna,long| multiqc
+        multiqc -->|wgs,atac,rna,long| multiqcmapper
+        multiqc -->|wgs,atac,rna,long| multiqc_out
+        multiqcmapper -->|wgs,atac,rna,long| mapped_json_out
+    end
+
+    %% ==========================================
+    %% STEP 3 ROUTING (Variant QC)
+    %% ==========================================
+    _inputs_hub -->|wgs| bcftools_stats
+    _inputs_hub -->|rna| bcftools_stats
+    _inputs_hub -->|long| bcftools_stats
+
+    %% ==========================================
+    %% STEP 1 ROUTING (Read QC)
+    %% ==========================================
+    _inputs_hub -->|wgs| fastqc
+    _inputs_hub -->|atac| fastqc
+    _inputs_hub -->|rna| fastqc
+    
+    _inputs_hub -->|wgs| seqfu
+    _inputs_hub -->|rna| seqfu
+    _inputs_hub -->|long| seqfu
+
+    _inputs_hub -->|wgs| fastp
+    _inputs_hub -->|atac| fastp
+
+    _inputs_hub -->|long| fastplong
+    _inputs_hub -->|long| nanoplot
+
+    %% ==========================================
+    %% STEP 2 ROUTING (Alignment QC)
+    %% ==========================================
+    _inputs_hub -->|wgs| samtools_stats
+    _inputs_hub -->|rna| samtools_stats
+    _inputs_hub -->|long| samtools_stats
+
+    _inputs_hub -->|wgs| preseq
+    _inputs_hub -->|atac| preseq
+    _inputs_hub -->|rna| preseq
+
+    _inputs_hub -->|wgs| mosdepth
+    _inputs_hub -->|atac| mosdepth
+    _inputs_hub -->|long| mosdepth
+
+    _inputs_hub -->|wgs| verifybamid
+    _inputs_hub -->|wgs| ngsbits
+    
+    _inputs_hub -->|atac| ataqv
+    
+    _inputs_hub -->|chip| phantompeakqual
+    
+    _inputs_hub -->|methyl| methydackel
+    
+    _inputs_hub -->|rna| rseqc
+    
+    _inputs_hub -->|long| cramino
+
+    %% ==========================================
+    %% REPORTING ROUTING (Collapsing everything)
+    %% ==========================================
+    fastqc -->|wgs,atac,rna| _report_hub
+    seqfu -->|wgs,rna,long| _report_hub
+    fastp -->|wgs,atac| _report_hub
+    fastplong -->|long| _report_hub
+    nanoplot -->|long| _report_hub
+    
+    samtools_stats -->|wgs,atac,rna,long| _report_hub
+    preseq -->|wgs,atac,rna| _report_hub
+    mosdepth -->|wgs,atac,long| _report_hub
+    verifybamid -->|wgs| _report_hub
+    ataqv -->|atac| _report_hub
+    phantompeakqual -->|chip| _report_hub
+    methydackel -->|methyl| _report_hub
+    rseqc -->|rna| _report_hub
+    cramino -->|long| _report_hub
+    ngsbits -->|wgs| _report_hub
+    
+    bcftools_stats -->|wgs,rna,long| _report_hub

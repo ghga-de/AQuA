@@ -28,8 +28,8 @@ workflow STEP2 {
 
     main:
 
-    ch_versions      = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions      = channel.empty()
+    ch_multiqc_files = channel.empty()
 
     def needs_fai = tools.contains('picard_collectmultiplemetrics') || 
                     tools.contains('methyldackel') || 
@@ -45,7 +45,7 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-    samplesheet.branch { meta, bam, index ->
+    samplesheet.branch { _meta, _bam, index ->
         has_index: index
         no_index: !index
     }.set { ch_bam_indexed_split }
@@ -56,23 +56,13 @@ workflow STEP2 {
 
     ch_newly_indexed = ch_bam_indexed_split.no_index
         .join(SAMTOOLS_INDEX.out.bai.mix(SAMTOOLS_INDEX.out.csi), remainder: false)
-        .map { meta, bam, old_empty, new_index -> [meta, bam, new_index] }
+        .map { meta, bam, _old_empty, new_index -> [meta, bam, new_index] }
 
     ch_final_bam_indexed = ch_bam_indexed_split.has_index.mix(ch_newly_indexed)
 
-    // SAMTOOLS STATS AND SAMTOOLS FLAGSTATS CAN RUN ALL ANALYSIS TYPES
-    if (tools.contains('samtools_stats')) {
-        SAMTOOLS_STATS(
-            ch_final_bam_indexed,
-            ch_fasta
-        )
-        ch_multiqc_files = ch_multiqc_files.mix(SAMTOOLS_STATS.out.stats.map { _meta, file -> file }.collect())
-        ch_versions = ch_versions.mix(SAMTOOLS_STATS.out.versions)
-    }
-
     if (tools.contains('sambamba_flagstat')) {
         // CRAM files crashing Sambamba
-        ch_final_bam_indexed.branch { meta, file, index -> 
+        ch_final_bam_indexed.branch { _meta, file, _index -> 
             bams:  file.name.endsWith('.bam')
             crams: file.name.endsWith('.cram')
         }.set { ch_flagstat_split }
@@ -101,7 +91,7 @@ workflow STEP2 {
     }
 
     // Branch out by analysis type
-    ch_final_bam_indexed.branch { meta, bam, bai ->
+    ch_final_bam_indexed.branch { meta, _bam, _bai ->
         wgs:    meta.experiment_method?.toLowerCase() in ['wgs']
         wes:    meta.experiment_method?.toLowerCase() in ['wxs', 'wcs', 'wes', 'tes']
         rna:    meta.experiment_method?.toLowerCase() in ['rna', 'total_rna', 'm_rna', 'nc_rna']
@@ -151,13 +141,13 @@ workflow STEP2 {
     ch_verifybamid_in = ch_assay_split.wgs.mix(ch_assay_split.wes)
     
     // Filter out cram files so only bam files proceed
-    ch_verifybamid_bam_only = ch_verifybamid_in.filter { meta, file, index -> 
+    ch_verifybamid_bam_only = ch_verifybamid_in.filter { _meta, file, _index -> 
         file.name.endsWith('.bam') 
     }
     if (ch_refvcf){
         if (tools.contains('verifybamid')) {
             VERIFYBAMID_VERIFYBAMID(
-                status.tumor,
+                ch_verifybamid_bam_only,
                 ch_refvcf     
             )
             ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfsm.map { _meta, file -> file }.collect())
@@ -167,7 +157,7 @@ workflow STEP2 {
     }
     if (tools.contains('rseqc')) {
          RSEQC_BAMSTAT(
-             ch_assay_split.rna.map { meta, bam, bai -> tuple(meta, bam) }
+             ch_assay_split.rna.map { meta, bam, _bai -> tuple(meta, bam) }
          )
          ch_multiqc_files = ch_multiqc_files.mix(RSEQC_BAMSTAT.out.txt.map { _meta, file -> file }.collect())
          ch_versions = ch_versions.mix(RSEQC_BAMSTAT.out.versions)
@@ -194,19 +184,19 @@ workflow STEP2 {
 
     if (tools.contains('phantompeakqualtools')) {
         PHANTOMPEAKQUALTOOLS(
-            ch_assay_split.chip.map { meta, bam, bai -> tuple(meta, bam) }
+            ch_assay_split.chip.map { meta, bam, _bai -> tuple(meta, bam) }
         )
         ch_multiqc_files = ch_multiqc_files.mix(PHANTOMPEAKQUALTOOLS.out.spp.map { _meta, file -> file }.collect())
         ch_versions = ch_versions.mix(PHANTOMPEAKQUALTOOLS.out.versions)
     }
 
     if (tools.contains('ngsbits_samplegender')) {
-        ch_ngsbits_in = ch_assay_split.wgs.filter { meta, bam, bai -> 
+        ch_ngsbits_in = ch_assay_split.wgs.filter { meta, _bam, _bai -> 
             def sex = meta.sex?.toString()?.trim()?.toUpperCase()
             return !sex || sex in ['NA', 'UNKNOWN', 'NULL', '']
         }
          NGSBITS_SAMPLEGENDER(
-             ch_assay_split.wgs,
+             ch_ngsbits_in,
              ch_fasta,
              ch_fai,
              params.samplegender_method ?: 'xy'

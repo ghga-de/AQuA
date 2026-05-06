@@ -23,6 +23,11 @@
 
 The pipeline automatically selects the appropriate quality control tools based on your provided analysis method (e.g., WGS, RNA-Seq, Nanopore) and compiles the results into a single MultiQC report.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/metromap.svg">
+  <img alt="metro map" src="docs/images/metromap.svg">
+</picture>
+
 ## Tool & Analysis Matrix
 
 The following table details which tools are executed based on the analysis method and input data type provided in the samplesheet.
