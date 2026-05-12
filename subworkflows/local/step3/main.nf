@@ -14,8 +14,8 @@ workflow STEP3 {
 
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
     samplesheet.branch { meta, vcf ->
             compressed: vcf.getName().endsWith('.gz')

@@ -31,24 +31,24 @@ workflow AQUA {
     // create reference channels ////
 
 
-    ch_fasta       = Channel.fromPath(params.fasta, checkIfExists: true)
+    ch_fasta       = channel.fromPath(params.fasta, checkIfExists: true)
                         .map{ fasta -> tuple([id: fasta.getSimpleName()], fasta) }.collect()
 
-    ch_fai         = params.fasta_fai ? Channel.fromPath(params.fasta_fai, checkIfExists: true).map{ fai -> tuple([id: fai.getSimpleName()], fai) }.collect()
-                                         : Channel.empty()
-    ch_intervals   = params.intervals ? Channel.fromPath(params.intervals, checkIfExists: true).map{ intervals -> tuple([id: intervals.getSimpleName()], intervals) }.collect()
-                                         : Channel.empty()
-    ch_gtf         = params.gtf       ? Channel.fromPath(params.gtf, checkIfExists: true).map{ gtf -> tuple([id: gtf.getSimpleName()], gtf) }.collect()
-                                         : Channel.empty()
-    ch_bed12       = params.bed12     ? Channel.fromPath(params.bed12, checkIfExists: true).map{ bed12 -> tuple([id: bed12.getSimpleName()], bed12) }.collect()
-                                         : Channel.empty()
-    ch_refvcf      = params.refvcf    ? Channel.fromPath(params.refvcf, checkIfExists: true).collect()
-                                         : Channel.empty()
+    ch_fai         = params.fasta_fai ? channel.fromPath(params.fasta_fai, checkIfExists: true).map{ fai -> tuple([id: fai.getSimpleName()], fai) }.collect()
+                                         : channel.empty()
+    ch_intervals   = params.intervals ? channel.fromPath(params.intervals, checkIfExists: true).map{ intervals -> tuple([id: intervals.getSimpleName()], intervals) }.collect()
+                                         : channel.empty()
+    ch_gtf         = params.gtf       ? channel.fromPath(params.gtf, checkIfExists: true).map{ gtf -> tuple([id: gtf.getSimpleName()], gtf) }.collect()
+                                         : channel.empty()
+    ch_bed12       = params.bed12     ? channel.fromPath(params.bed12, checkIfExists: true).map{ bed12 -> tuple([id: bed12.getSimpleName()], bed12) }.collect()
+                                         : channel.empty()
+    ch_refvcf      = params.refvcf    ? channel.fromPath(params.refvcf, checkIfExists: true).collect()
+                                         : channel.empty()
 
 
     // create empty channels for versions and multiqc files
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
     ch_samplesheet
         .branch { it ->
@@ -67,7 +67,7 @@ workflow AQUA {
         return [] 
     }
 
-    def default_tools = ['fastp', 'fastplong', 'mosdepth', 'sambamba_flagstat', 'verifybamid', 'ngsbits_samplegender', 'ataqv', 'phantompeakqual', 'rseqc', 'cramino', 'methydackel', 'bcftools_stats']
+    def default_tools = ['fastp', 'fastplong', 'mosdepth', 'sambamba_flagstat', 'ngsbits_samplegender', 'ataqv', 'phantompeakqual', 'rseqc', 'nanoplot', 'bcftools_stats']
     def skipped_tools = get_tool_list(params.skip_tools)
     def add_tools     = get_tool_list(params.analysis_tools)
     
@@ -87,11 +87,11 @@ workflow AQUA {
     //ch_versions = ch_versions.mix(SAMTOOLS_FASTQ.out.versions)
     
     // we dont have a method to analyse these files for now
-    samplesheet.other.filter { meta, file -> 
+    samplesheet.other.filter { _meta, file -> 
         file.name.endsWith('.fast5') || file.name.endsWith('.fast5.tar.gz') || file.name.endsWith('.pod5')
     }.set{nanopore_others}
 
-    samplesheet.other.filter { meta, file -> 
+    samplesheet.other.filter { _meta, file -> 
         file.name.endsWith('sequencing_summary.txt')
     }.set{nanopore_summary}    
 
@@ -103,7 +103,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP1.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP1.out.ch_multiqc_files)
 
-    samplesheet.other.filter { meta, file -> 
+    samplesheet.other.filter { _meta, file -> 
         file.name.endsWith('.sam') || file.name.endsWith('.bam') || file.name.endsWith('.cram')
     }.set{aligned_others}
     // TODO: ch_intervals should be library spesific! check which file that is
@@ -118,7 +118,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP2.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP2.out.ch_multiqc_files)
 
-    samplesheet.other.filter { meta, file -> 
+    samplesheet.other.filter { _meta, file -> 
         file.name.endsWith('.bcf') || file.name.endsWith('.vcf') || file.name.endsWith('.bcf.gz') || file.name.endsWith('.vcf.gz')
     }.set{called_others}
     // step 3 only targets vcf and bcf files for now

@@ -34,14 +34,14 @@ The following table details which tools are executed based on the analysis metho
 
 | Analysis Method | Read QC (FastQ) | Alignment QC (BAM) | Variant QC (VCF) |
 | :--- | :--- | :--- | :--- |
-| **WGS** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats, VerifyBamID, NGSBits, Preseq | *BCFTools Stats* |
+| **WGS** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats, VerifyBamID, *NGSBits*, Preseq | *BCFTools Stats* |
 | **WES / TES** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats, Preseq | *BCFTools Stats* |
 | **ATAC Seq** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, *Ataqv*, Samtools Stats,  Preseq | |
 | **ChIP Seq** | *FastP*, FastQC, SeqFU | *Mosdepth*,*Sambamba flagstats*,*Phantompeakqualtools*, Samtools Stats, Preseq |  |
 | **RNA Seq / smRNA** | FastQC, SeqFU | *Samtools Stats*, *RSeQC*, Preseq | *BCFTools Stats* |
 | **Nanopore** | *FastPLong*,  *NanoPlot*, SeqFU | *Mosdepth*, *Sambamba flagstats*, *Cramino*, Samtools Stats | *BCFTools Stats* |
 | **PacBio** | *FastPLong*, *NanoPlot* | *Mosdepth*, *Cramino*, *Sambamba flagstats*, Samtools Stats | *BCFTools Stats* |
-| **MethylSeq** | *FastP*, FastQC, SeqFU | *Mosdepth*, *MethylDackel*, *Sambamba flagstats*, Samtools Stats |  |
+| **MethylSeq** | *FastP*, FastQC, SeqFU | *Mosdepth*, MethylDackel, *Sambamba flagstats*, Samtools Stats |  |
 | **cfDNA / Other** | *FastP*, FastQC, SeqFU | *Mosdepth*, *Sambamba flagstats*, Samtools Stats | *BCFTools Stats* |
 
 > [!NOTE]

@@ -10,7 +10,6 @@ report_section_order:
     order: -1002
 
 export_plots: true
-
 disable_version_detection: true
 ignore_images: false
 
@@ -24,7 +23,6 @@ table_columns_visible:
 run_modules:
   - fastqc
   - fastp
-  #  - fastplong
   - mosdepth
   - picard
   - rseqc
@@ -34,6 +32,41 @@ run_modules:
   - verifybamid
   - preseq
   - ataqv
+  - nanostat
+  - seqfu
+  - phantompeakqualtools
+  - custom_content
+
+custom_data:
+  fastplong:
+    section_name: 'Fastp Long Reads'
+    description: 'Fastp is a tool designed to provide fast all-in-one preprocessing for FastQ files. It can perform quality filtering, adapter trimming, and more.'
+    plot_type: 'table'
+  cramino:
+    section_name: "Cramino Long Reads"
+    plot_type: 'table'
+    headers:
+      "Number of alignments":
+        description: "Number of alignments"
+        format: "{:,.0f}"
+      "% from total alignments":
+        description: "Total alignments"
+        format: "{:,.2f}"
+      "Number of reads":
+        description: "Number of reads"
+        format: "{:,.2f}"
+      "% Mean coverage":
+        description: "Mean coverage"
+        format: "{:,.2f}"
+
+sp:
+  fastplong:
+    fn: 'fastplong*json'
+  cramino:
+    fn: '*.txt'
+  phantompeakqualtools/out:
+    fn: '*.spp.out'
+
 
 module_order:
   - fastqc:
@@ -54,6 +87,8 @@ module_order:
       name: "RSeQC BAM stats"
   - bcftools:
       name: "bcftools stats"
+  - seqfu:
+      name: "SeqFU stats"
   - ngsbits:
       name: "ngsbits samplegender"
   - preseq:
@@ -64,6 +99,10 @@ module_order:
       name: "Toolkit for quality control and visualization of ATAC-seq data."
   - phantompeakqualtools:
       name: "Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq data."
+  - cramino:
+      name: "Cramino stats"
+  - nanostat:
+      name: "Nanostat"
 
 general_stats_columns:
   samtools/stats:

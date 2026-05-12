@@ -17,10 +17,10 @@ workflow STEP1 {
 
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
-    samplesheet.branch { meta, reads ->
+    samplesheet.branch { meta, _reads ->
         short_ch:   !(meta.experiment_method?.toLowerCase() in ['nanopore', 'pacbio'])
         long_ch:    true
     }.set { inputs }
@@ -52,7 +52,7 @@ workflow STEP1 {
 
     }
     // filter out fast5 and pod5 for now
-    inputs.long_ch.branch { meta, reads ->
+    inputs.long_ch.branch { _meta, reads ->
         def file_list = reads instanceof Collection ? reads : [reads]
         signal: file_list.any { it.name.endsWith('.fast5') || it.name.endsWith('.pod5') }  
         fastq: true 

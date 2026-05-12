@@ -12,8 +12,8 @@ process MULTIQCMAPPER {
     path concepts_yaml
 
     output:
-    path "unified.tsv", emit: unified
-    path "versions.yml", emit: versions
+    path "*unified.tsv",  emit: unified
+    path "versions.yml",  emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -24,7 +24,7 @@ process MULTIQCMAPPER {
     multiqc-mapper resolve \\
         "${multiqc_data_dir}" \\
         "${concepts_yaml}" \\
-        --output unified.tsv \\
+        --output qc_metrics_unified.tsv \\
         --format tsv \\
         ${args}
 
@@ -35,9 +35,8 @@ process MULTIQCMAPPER {
     """
 
     stub:
-    def args = task.ext.args ?: ''
     """
-    touch unified.tsv
+    touch unified.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -182,7 +182,7 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(METHYLDACKEL_MBIAS.out.versions)
     }
 
-    if (tools.contains('phantompeakqualtools')) {
+    if (tools.contains('phantompeakqual')) {
         PHANTOMPEAKQUALTOOLS(
             ch_assay_split.chip.map { meta, bam, _bai -> tuple(meta, bam) }
         )
