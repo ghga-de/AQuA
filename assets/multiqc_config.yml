@@ -42,9 +42,11 @@ custom_data:
     section_name: 'Fastp Long Reads'
     description: 'Fastp is a tool designed to provide fast all-in-one preprocessing for FastQ files. It can perform quality filtering, adapter trimming, and more.'
     plot_type: 'table'
+    file_format: 'json'
   cramino:
     section_name: "Cramino Long Reads"
     plot_type: 'table'
+    file_format: 'txt'
     headers:
       "Number of alignments":
         description: "Number of alignments"
@@ -61,11 +63,18 @@ custom_data:
 
 sp:
   fastplong:
-    fn: 'fastplong*json'
+    fn: 'fastplong*.json'
   cramino:
-    fn: '*.txt'
+    fn: '*_mqc.txt'
   phantompeakqualtools/out:
     fn: '*.spp.out'
+  seqfu:
+    fn: '*.tsv'
+  nanostat:
+    fn: '*NanoStat.txt'
+  rseqc:
+    fn: '*bam_stat.txt'
+
 
 
 module_order:
@@ -104,20 +113,330 @@ module_order:
   - nanostat:
       name: "Nanostat"
 
-general_stats_columns:
-  samtools/stats:
-    columns:
-      reads_mapped_percent:
-        title: "% Mapped"
-        description: "% Mapped reads from samtools stats"
-        hidden: false
-      error_rate:
-        title: "Error rate"
-        description: "Error rate from samtools stats"
-        hidden: false
-
 extra_fn_clean_exts:
   - "_val"
   - type: regex_keep
     pattern: "^.*.(md|recal).mosdepth.(global|region).dist"
     module: mosdepth
+
+# Expanded general_stats_columns configuration
+general_stats_columns:
+  # FastQC columns
+  fastqc:
+    columns:
+      percent_gc:
+        title: "% GC"
+        description: "Percentage of GC content"
+        hidden: false
+      avg_sequence_length:
+        title: "Avg Length"
+        description: "Average sequence length"
+        hidden: false
+      percent_duplicates:
+        title: "% Dups"
+        description: "Percentage of duplicate reads"
+        hidden: false
+      percent_fails:
+        title: "% Fails"
+        description: "Percentage of sequences that failed QC"
+        hidden: false
+      total_sequences:
+        title: "Total Seqs"
+        description: "Total number of sequences"
+        hidden: false
+
+  # FastP columns
+  fastp:
+    columns:
+      pct_duplication:
+        title: "% Duplication"
+        description: "Duplication rate"
+        hidden: false
+      after_filtering_total_reads:
+        title: "Reads After Filter"
+        description: "Total reads after filtering"
+        hidden: false
+      after_filtering_q30_rate:
+        title: "Q30 Rate"
+        description: "Q30 rate after filtering"
+        hidden: false
+      filtering_result_passed_filter_reads:
+        title: "Passed Filter"
+        description: "Reads that passed filtering"
+        hidden: false
+
+  # Samtools columns (you already have some of these)
+  samtools:
+    columns:
+      reads_mapped_percent:
+        title: "% Mapped"
+        description: "Percentage of mapped reads"
+        hidden: false
+      reads_properly_paired_percent:
+        title: "% Proper Pairs"
+        description: "Percentage of properly paired reads"
+        hidden: false
+      error_rate:
+        title: "Error Rate"
+        description: "Error rate from samtools stats"
+        hidden: false
+      flagstat_total:
+        title: "Total Reads"
+        description: "Total reads from flagstat"
+        hidden: false
+      pct_dups:
+        title: "% Duplicates"
+        description: "Percentage of duplicate reads"
+        hidden: false
+      reads_mapped:
+        title: "Mapped Reads"
+        description: "Number of mapped reads"
+        hidden: false
+      average_length:
+        title: "Avg Read Length"
+        description: "Average read length"
+        hidden: false
+
+  # Mosdepth columns
+  mosdepth:
+    columns:
+      mean_coverage:
+        title: "Mean Coverage"
+        description: "Mean coverage across genome"
+        hidden: false
+      median_coverage:
+        title: "Median Coverage"
+        description: "Median coverage across genome"
+        hidden: false
+      percent_coverage_1x:
+        title: "% ≥1X"
+        description: "Percentage of genome with ≥1X coverage"
+        hidden: false
+      percent_coverage_5x:
+        title: "% ≥5X"
+        description: "Percentage of genome with ≥5X coverage"
+        hidden: false
+      percent_coverage_10x:
+        title: "% ≥10X"
+        description: "Percentage of genome with ≥10X coverage"
+        hidden: false
+      percent_coverage_20x:
+        title: "% ≥20X"
+        description: "Percentage of genome with ≥20X coverage"
+        hidden: false
+
+  # Picard columns
+  picard:
+    columns:
+      PERCENT_DUPLICATION:
+        title: "% Duplication"
+        description: "Percentage of duplicate reads"
+        hidden: false
+      MEAN_INSERT_SIZE:
+        title: "Insert Size"
+        description: "Mean insert size"
+        hidden: false
+      STANDARD_DEVIATION:
+        title: "Insert SD"
+        description: "Standard deviation of insert size"
+        hidden: false
+      PCT_PF_READS_ALIGNED:
+        title: "% Aligned"
+        description: "Percentage of PF reads aligned"
+        hidden: false
+      PF_MISMATCH_RATE:
+        title: "Mismatch Rate"
+        description: "Mismatch rate"
+        hidden: false
+      MEAN_TARGET_COVERAGE:
+        title: "Target Coverage"
+        description: "Mean target coverage"
+        hidden: false
+
+  # RSeQC columns
+  rseqc:
+    columns:
+      total_reads:
+        title: "Total Reads"
+        description: "Total number of reads"
+        hidden: false
+      mapped_reads:
+        title: "Mapped Reads"
+        description: "Number of mapped reads"
+        hidden: false
+      uniquely_mapped:
+        title: "Unique Mapped"
+        description: "Uniquely mapped reads"
+        hidden: false
+      multimapping:
+        title: "Multi-mapped"
+        description: "Multi-mapping reads"
+        hidden: false
+      non_splice_reads:
+        title: "Non-splice"
+        description: "Non-splice reads"
+        hidden: false
+      splice_reads:
+        title: "Splice Reads"
+        description: "Splice reads"
+        hidden: false
+
+  # BCFtools columns
+  bcftools:
+    columns:
+      number_of_SNPs:
+        title: "SNPs"
+        description: "Number of SNPs"
+        hidden: false
+      number_of_indels:
+        title: "Indels"
+        description: "Number of indels"
+        hidden: false
+      number_of_MNPs:
+        title: "MNPs"
+        description: "Number of MNPs"
+        hidden: true  # You already have this set to true
+      number_of_others:
+        title: "Others"
+        description: "Number of other variants"
+        hidden: true  # You already have this set to true
+      tstv_ratio:
+        title: "Ts/Tv"
+        description: "Transition/Transversion ratio"
+        hidden: false
+
+  # NGSbits columns
+  ngsbits:
+    columns:
+      gender:
+        title: "Gender"
+        description: "Predicted gender"
+        hidden: false
+      x_coverage:
+        title: "X Coverage"
+        description: "X chromosome coverage"
+        hidden: false
+      y_coverage:
+        title: "Y Coverage"
+        description: "Y chromosome coverage"
+        hidden: false
+
+  # VerifyBamID columns
+  verifybamid:
+    columns:
+      freemix:
+        title: "Contamination"
+        description: "Estimated contamination level"
+        hidden: false
+      freelk1:
+        title: "FreeLK1"
+        description: "Log-likelihood under null hypothesis"
+        hidden: false
+      freelk0:
+        title: "FreeLK0"
+        description: "Log-likelihood under alternative hypothesis"
+        hidden: false
+
+  # Preseq columns
+  preseq:
+    columns:
+      unique_percent:
+        title: "% Unique"
+        description: "Percentage of unique reads"
+        hidden: false
+      max_complexity:
+        title: "Max Complexity"
+        description: "Maximum library complexity"
+        hidden: false
+      estimated_complexity:
+        title: "Est. Complexity"
+        description: "Estimated library complexity"
+        hidden: false
+
+  # ATACseq QV (ataqv) columns
+  ataqv:
+    columns:
+      total_reads:
+        title: "Total Reads"
+        description: "Total number of reads"
+        hidden: false
+      total_autosomal_reads:
+        title: "Autosomal Reads"
+        description: "Reads mapping to autosomes"
+        hidden: false
+      duplicate_fraction:
+        title: "Duplicate Fraction"
+        description: "Fraction of duplicate reads"
+        hidden: false
+      mitochondrial_fraction:
+        title: "Mito Fraction"
+        description: "Fraction of mitochondrial reads"
+        hidden: false
+      tss_enrichment:
+        title: "TSS Enrichment"
+        description: "TSS enrichment score"
+        hidden: false
+
+  # NanoStat columns (for long reads)
+  nanostat:
+    columns:
+      number_of_reads:
+        title: "Reads"
+        description: "Number of reads"
+        hidden: false
+      mean_read_length:
+        title: "Mean Length"
+        description: "Mean read length"
+        hidden: false
+      mean_read_quality:
+        title: "Mean Quality"
+        description: "Mean read quality"
+        hidden: false
+      median_read_length:
+        title: "Median Length"
+        description: "Median read length"
+        hidden: false
+      n50:
+        title: "N50"
+        description: "N50 read length"
+        hidden: false
+
+  # SeqFu columns
+  seqfu:
+    columns:
+      total_bp:
+        title: "Total BP"
+        description: "Total base pairs"
+        hidden: false
+      total_seq:
+        title: "Total Seqs"
+        description: "Total sequences"
+        hidden: false
+      avg_length:
+        title: "Avg Length"
+        description: "Average sequence length"
+        hidden: false
+      min_length:
+        title: "Min Length"
+        description: "Minimum sequence length"
+        hidden: false
+      max_length:
+        title: "Max Length"
+        description: "Maximum sequence length"
+        hidden: false
+
+  # PhantomPeakQualTools columns
+  phantompeakqualtools:
+    columns:
+      nsc:
+        title: "NSC"
+        description: "Normalized strand cross-correlation"
+        hidden: false
+      rsc:
+        title: "RSC"
+        description: "Relative strand cross-correlation"
+        hidden: false
+      quality_tag:
+        title: "Quality"
+        description: "Quality tag"
+        hidden: false
