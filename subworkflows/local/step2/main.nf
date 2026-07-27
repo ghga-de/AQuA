@@ -45,7 +45,12 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-    samplesheet.branch { _meta, _bam, index ->
+    ch_bam_for_metrics = samplesheet.filter { meta, bam, index ->
+        def alignment_status = meta.alignment_status instanceof List ? '' : meta.alignment_status?.toString()?.toLowerCase()
+        !(alignment_status in ["unaligned", "unmapped"])
+    }
+
+    ch_bam_for_metrics.branch { meta, bam, index ->
         has_index: index
         no_index: !index
     }.set { ch_bam_indexed_split }
@@ -110,7 +115,8 @@ workflow STEP2 {
         ch_mosdepth_targeted = ch_assay_split.wes.mix(ch_assay_split.atac, ch_assay_split.chip, ch_assay_split.meth)
             .combine(ch_intervals.ifEmpty([[:], []])) 
             .map { meta, file, index, meta_int, intervals -> 
-                def final_intervals = intervals instanceof List ? [] : intervals
+                def target_bed = meta.target_bed instanceof List ? '' : meta.target_bed?.toString()
+                def final_intervals = target_bed ? file(target_bed, checkIfExists: true) : (intervals instanceof List ? [] : intervals)
                 return tuple(meta, file, index, final_intervals) 
             }
         

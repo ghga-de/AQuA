@@ -53,6 +53,22 @@
                 "type": "string",
                 "meta": ["analysis_method"]
             },
+            "analysis_tool": {
+                "type": "string",
+                "meta": ["analysis_tool"]
+            },
+            "analysis_genome": {
+                "type": "string",
+                "meta": ["analysis_genome"]
+            },
+            "target_bed": {
+                "type": "string",
+                "meta": ["target_bed"]
+            },
+            "alignment_status": {
+                "type": "string",
+                "meta": ["alignment_status"]
+            },
             "fastq_1": {
                 "type": "string",
                 "format": "file-path",
