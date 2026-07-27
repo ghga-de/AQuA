@@ -25,11 +25,11 @@ graph LR
         metadata_file[ ]
         submission_path_file[ ]
         ref_genome_file[ ]
-        
+
         metadata[Metadata]
         path[Submission Path]
         ref_genome[Reference Genomes]
-        
+
         _input_gather[hidden]
         _inputs_hub[hidden]
 
@@ -71,7 +71,7 @@ graph LR
     subgraph step3 [Variant QC]
         bcftools_stats[BCFTools Stats]
     end
-    
+
 
 
 
@@ -101,7 +101,7 @@ graph LR
     _inputs_hub -->|wgs| fastqc
     _inputs_hub -->|atac| fastqc
     _inputs_hub -->|rna| fastqc
-    
+
     _inputs_hub -->|wgs| seqfu
     _inputs_hub -->|rna| seqfu
     _inputs_hub -->|long| seqfu
@@ -129,15 +129,15 @@ graph LR
 
     _inputs_hub -->|wgs| verifybamid
     _inputs_hub -->|wgs| ngsbits
-    
+
     _inputs_hub -->|atac| ataqv
-    
+
     _inputs_hub -->|chip| phantompeakqual
-    
+
     _inputs_hub -->|methyl| methydackel
-    
+
     _inputs_hub -->|rna| rseqc
-    
+
     _inputs_hub -->|long| cramino
 
     %% ==========================================
@@ -148,7 +148,7 @@ graph LR
     fastp -->|wgs,atac| _report_hub
     fastplong -->|long| _report_hub
     nanoplot -->|long| _report_hub
-    
+
     samtools_stats -->|wgs,atac,rna,long| _report_hub
     preseq -->|wgs,atac,rna| _report_hub
     mosdepth -->|wgs,atac,long| _report_hub
@@ -159,5 +159,5 @@ graph LR
     rseqc -->|rna| _report_hub
     cramino -->|long| _report_hub
     ngsbits -->|wgs| _report_hub
-    
+
     bcftools_stats -->|wgs,rna,long| _report_hub

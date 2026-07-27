@@ -30,7 +30,7 @@ runs:
       run: |
         # Identify the target branch (usually main or master)
         DIFF_TARGET=${{ github.base_ref || 'main' }}
-        
+
         # Explicitly fetch the target branch so git knows what it is
         echo "Fetching origin/$DIFF_TARGET..."
         git fetch origin $DIFF_TARGET --depth=1
@@ -46,7 +46,7 @@ runs:
             echo "nf-test dry-run failed."
             exit 1
           }
-        
+
         cat nftest_out.txt
 
         shard="[]"
@@ -57,7 +57,7 @@ runs:
         else
           # Extract the number of tests from the 'Executed X tests' line
           num_tests=$(grep "Executed" nftest_out.txt | awk '{print $2}')
-          
+
           if [[ -n "$num_tests" && "$num_tests" -gt 0 ]]; then
             shards_to_run=$(( num_tests < ${{ inputs.max_shards }} ? num_tests : ${{ inputs.max_shards }} ))
             shard=$(seq 1 "$shards_to_run" | jq -R . | jq -c -s .)

@@ -16,6 +16,13 @@ include { STEP1                  } from '../subworkflows/local/step1'
 include { STEP2                  } from '../subworkflows/local/step2'
 include { STEP3                  } from '../subworkflows/local/step3'
 
+def get_tool_list(param) {
+    if (!param) return []
+    if (param instanceof CharSequence) return param.split(',').collect { it.trim().toLowerCase() }
+    if (param instanceof Collection) return param.collect { it.toString().trim().toLowerCase() }
+    return []
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     RUN MAIN WORKFLOW
@@ -60,17 +67,10 @@ workflow AQUA {
         }
         .set { samplesheet }
 
-    def get_tool_list = { param ->
-        if (!param) return []
-        if (param instanceof CharSequence) return param.split(',').collect { it.trim().toLowerCase() }
-        if (param instanceof Collection) return param.collect { it.toString().trim().toLowerCase() }
-        return [] 
-    }
-
     def default_tools = ['fastp', 'fastplong', 'mosdepth', 'sambamba_flagstat', 'ngsbits_samplegender', 'ataqv', 'phantompeakqual', 'rseqc', 'nanoplot', 'bcftools_stats']
     def skipped_tools = get_tool_list(params.skip_tools)
     def add_tools     = get_tool_list(params.analysis_tools)
-    
+
     def tools = default_tools + add_tools - skipped_tools
 
     // STEP 1 // FASTQ FILE ANALYSIS //
@@ -85,15 +85,15 @@ workflow AQUA {
     //    samtools_fastq_interleave,
     //)
     //ch_versions = ch_versions.mix(SAMTOOLS_FASTQ.out.versions)
-    
+
     // we dont have a method to analyse these files for now
-    samplesheet.other.filter { _meta, file -> 
+    samplesheet.other.filter { _meta, file ->
         file.name.endsWith('.fast5') || file.name.endsWith('.fast5.tar.gz') || file.name.endsWith('.pod5')
     }.set{nanopore_others}
 
-    samplesheet.other.filter { _meta, file -> 
+    samplesheet.other.filter { _meta, file ->
         file.name.endsWith('sequencing_summary.txt')
-    }.set{nanopore_summary}    
+    }.set{nanopore_summary}
 
     STEP1(
         samplesheet.step1,
@@ -103,7 +103,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP1.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP1.out.ch_multiqc_files)
 
-    samplesheet.other.filter { _meta, file -> 
+    samplesheet.other.filter { _meta, file ->
         file.name.endsWith('.sam') || file.name.endsWith('.bam') || file.name.endsWith('.cram')
     }.set{aligned_others}
     // TODO: ch_intervals should be library spesific! check which file that is
@@ -118,7 +118,7 @@ workflow AQUA {
     ch_versions = ch_versions.mix(STEP2.out.ch_versions)
     ch_multiqc_files = ch_multiqc_files.mix(STEP2.out.ch_multiqc_files)
 
-    samplesheet.other.filter { _meta, file -> 
+    samplesheet.other.filter { _meta, file ->
         file.name.endsWith('.bcf') || file.name.endsWith('.vcf') || file.name.endsWith('.bcf.gz') || file.name.endsWith('.vcf.gz')
     }.set{called_others}
     // step 3 only targets vcf and bcf files for now
@@ -133,7 +133,7 @@ workflow AQUA {
     //TODO: ADD A TOOL TO PREDICT CONTAMINATIONS BTW SOMATIC AND NORMAL CELLS
 
     // such a tool https://github.com/ghga-de/nf-snvcalling/blob/main/bin/PurityReloaded.py can be a nice addition
-    // but it is very old using python2.7 plus it is hard-coded towards dkfz pipelines. If we want to use the logic we 
+    // but it is very old using python2.7 plus it is hard-coded towards dkfz pipelines. If we want to use the logic we
     // have to rewrite it and make it more general. It can be added in the next version of the pipeline if there is a need for it.
 
     // another tool would be a nice addition is https://github.com/ghga-de/nf-platypusindelcalling/blob/main/modules/local/sample_swap.nf

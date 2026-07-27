@@ -79,9 +79,9 @@ SAMPLE_VCF,L001,ind_3,NA,wgs,,,,,s3.vcf.gz
 | `experiment_method`   | The sequencing method used. Supported values: `wgs`, `wes`, `rna`, `atac`, `nanopore`, `pacbio`.                                                                                   |
 | `analysis_method`     | The type of analysis performed (e.g., `varcall`).                                                                                                                                  |
 | `analysis_tool`       | Optional name of the tool, workflow, or pipeline that produced a derived BAM/CRAM/VCF file.                                                                                        |
-| `analysis_genome`     | Optional reference genome or assembly used to produce a derived analysis file.                                                                                                      |
+| `analysis_genome`     | Optional reference genome or assembly used to produce a derived analysis file.                                                                                                     |
 | `target_bed`          | Optional per-row BED or interval file. For targeted BAM/CRAM mosdepth runs this takes priority over `--intervals`.                                                                 |
-| `alignment_status`    | Optional alignment state for BAM/CRAM inputs. Rows marked `unaligned` or `unmapped` are excluded from coordinate-based BAM/CRAM QC.                                                 |
+| `alignment_status`    | Optional alignment state for BAM/CRAM inputs. Rows marked `unaligned` or `unmapped` are excluded from coordinate-based BAM/CRAM QC.                                                |
 | `fastq_1`             | Path to the Read 1 FastQ file. Must end in `.fastq.gz` or `.fq.gz`.                                                                                                                |
 | `fastq_2`             | Path to the Read 2 FastQ file for paired-end data. Optional for single-end.                                                                                                        |
 | `single_end`          | Boolean (`true`/`false`) indicating if the sequencing is single-end.                                                                                                               |

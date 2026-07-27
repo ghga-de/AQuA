@@ -39,14 +39,14 @@ run_modules:
 
 custom_data:
   fastplong:
-    section_name: 'Fastp Long Reads'
-    description: 'Fastp is a tool designed to provide fast all-in-one preprocessing for FastQ files. It can perform quality filtering, adapter trimming, and more.'
-    plot_type: 'table'
-    file_format: 'json'
+    section_name: "Fastp Long Reads"
+    description: "Fastp is a tool designed to provide fast all-in-one preprocessing for FastQ files. It can perform quality filtering, adapter trimming, and more."
+    plot_type: "table"
+    file_format: "json"
   cramino:
     section_name: "Cramino Long Reads"
-    plot_type: 'table'
-    file_format: 'txt'
+    plot_type: "table"
+    file_format: "txt"
     headers:
       "Number of alignments":
         description: "Number of alignments"
@@ -63,19 +63,17 @@ custom_data:
 
 sp:
   fastplong:
-    fn: 'fastplong*.json'
+    fn: "fastplong*.json"
   cramino:
-    fn: '*_mqc.txt'
+    fn: "*_mqc.txt"
   phantompeakqualtools/out:
-    fn: '*.spp.out'
+    fn: "*.spp.out"
   seqfu:
-    fn: '*.tsv'
+    fn: "*.tsv"
   nanostat:
-    fn: '*NanoStat.txt'
+    fn: "*NanoStat.txt"
   rseqc:
-    fn: '*bam_stat.txt'
-
-
+    fn: "*bam_stat.txt"
 
 module_order:
   - fastqc:
@@ -295,11 +293,11 @@ general_stats_columns:
       number_of_MNPs:
         title: "MNPs"
         description: "Number of MNPs"
-        hidden: true  # You already have this set to true
+        hidden: true # You already have this set to true
       number_of_others:
         title: "Others"
         description: "Number of other variants"
-        hidden: true  # You already have this set to true
+        hidden: true # You already have this set to true
       tstv_ratio:
         title: "Ts/Tv"
         description: "Transition/Transversion ratio"
