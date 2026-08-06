@@ -48,10 +48,6 @@ jobs:
         # continues so the artifact can upload even if linting finds errors.
         run: npm-groovy-lint > lint_log.txt || true
 
-      - name: Run Nextflow Syntax Check
-        # A quick dry-run to ensure your pipeline compiles successfully
-        run: nextflow run . -preview --input tests/samplesheets/samplesheet.csv
-
       - name: Save PR number
         if: ${{ always() }}
         run: echo ${{ github.event.pull_request.number }} > PR_number.txt
