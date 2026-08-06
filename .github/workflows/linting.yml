@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Nextflow Syntax Check
         # A quick dry-run to ensure your pipeline compiles successfully
-        run: nextflow run . -preview
+        run: nextflow run . -preview --input tests/samplesheets/samplesheet.csv
 
       - name: Save PR number
         if: ${{ always() }}
