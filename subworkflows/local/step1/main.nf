@@ -54,8 +54,8 @@ workflow STEP1 {
     // filter out fast5 and pod5 for now
     inputs.long_ch.branch { _meta, reads ->
         def file_list = reads instanceof Collection ? reads : [reads]
-        signal: file_list.any { it.name.endsWith('.fast5') || it.name.endsWith('.pod5') }  
-        fastq: true 
+        signal: file_list.any { it.name.endsWith('.fast5') || it.name.endsWith('.pod5') }
+        fastq: true
     }.set { split_long_reads }
 
     // Run fastplong for long samples
@@ -74,7 +74,7 @@ workflow STEP1 {
     split_long_reads.fastq.filter{ meta, file ->
         !(meta.experiment_method?.toLowerCase() in ['pacbio'])
     }.set{ch_no_pacbio}
-    
+
     // Runs SEQFU_STATS for all non-PacBio samples, as SEQFU_STATS does not support PacBio data
     if (tools.contains('seqfu')) {
         SEQFU_STATS(

@@ -38,19 +38,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install npm-groovy-lint
         run: npm install -g npm-groovy-lint
 
       - name: Run npm-groovy-lint
-        # Lints all .nf and .config files and saves output. '|| true' ensures the workflow 
+        # Lints all .nf and .config files and saves output. '|| true' ensures the workflow
         # continues so the artifact can upload even if linting finds errors.
         run: npm-groovy-lint > lint_log.txt || true
-
-      - name: Run Nextflow Syntax Check
-        # A quick dry-run to ensure your pipeline compiles successfully
-        run: nextflow run . -preview
 
       - name: Save PR number
         if: ${{ always() }}

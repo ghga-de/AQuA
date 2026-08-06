@@ -1,6 +1,6 @@
-version: '1.0'
+version: "1.0"
 generated_by: multiqc-mapper discover
-multiqc_version: '1.33'
+multiqc_version: "1.33"
 note: |-
   AUTO-GENERATED — edit this file to merge equivalent metrics across tools.
   Each concept key (e.g. 'samtools.total_reads') maps to the (anchor, metric) pair
@@ -19,817 +19,817 @@ note: |-
 concepts:
   cramino.col1:
     sources:
-    - anchor: cramino-section-plot
-      metric: col1
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: '#Seqs'
-      description: Number of sequences
-    title: '#Seqs'
+      - anchor: cramino-section-plot
+        metric: col1
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: "#Seqs"
+        description: Number of sequences
+    title: "#Seqs"
     description: Number of sequences
   cramino.col2:
     sources:
-    - anchor: cramino-section-plot
-      metric: col2
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: Total bp
-      description: Total size of the dataset
+      - anchor: cramino-section-plot
+        metric: col2
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: Total bp
+        description: Total size of the dataset
     title: Total bp
     description: Total size of the dataset
   cramino.col3:
     sources:
-    - anchor: cramino-section-plot
-      metric: col3
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: Avg
-      description: Average sequence length
+      - anchor: cramino-section-plot
+        metric: col3
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: Avg
+        description: Average sequence length
     title: Avg
     description: Average sequence length
   cramino.col4:
     sources:
-    - anchor: cramino-section-plot
-      metric: col4
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: N50
-      description: 50% of the sequences are longer than this size
+      - anchor: cramino-section-plot
+        metric: col4
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: N50
+        description: 50% of the sequences are longer than this size
     title: N50
     description: 50% of the sequences are longer than this size
   cramino.col5:
     sources:
-    - anchor: cramino-section-plot
-      metric: col5
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: N75
-      description: 75% of the sequences are longer than this size
+      - anchor: cramino-section-plot
+        metric: col5
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: N75
+        description: 75% of the sequences are longer than this size
     title: N75
     description: 75% of the sequences are longer than this size
   cramino.col6:
     sources:
-    - anchor: cramino-section-plot
-      metric: col6
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: N90
-      description: 90% of the sequences are longer than this size
+      - anchor: cramino-section-plot
+        metric: col6
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: N90
+        description: 90% of the sequences are longer than this size
     title: N90
     description: 90% of the sequences are longer than this size
   cramino.col7:
     sources:
-    - anchor: cramino-section-plot
-      metric: col7
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: Min
-      description: Length of the shortest sequence
+      - anchor: cramino-section-plot
+        metric: col7
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: Min
+        description: Length of the shortest sequence
     title: Min
     description: Length of the shortest sequence
   cramino.col8:
     sources:
-    - anchor: cramino-section-plot
-      metric: col8
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: Max
-      description: Length of the longest sequence
+      - anchor: cramino-section-plot
+        metric: col8
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: Max
+        description: Length of the longest sequence
     title: Max
     description: Length of the longest sequence
   cramino.col9:
     sources:
-    - anchor: cramino-section-plot
-      metric: col9
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: auN
-      description: Area under the Nx curve
+      - anchor: cramino-section-plot
+        metric: col9
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: auN
+        description: Area under the Nx curve
     title: auN
     description: Area under the Nx curve
   cramino.col10:
     sources:
-    - anchor: cramino-section-plot
-      metric: col10
-      section_key: cramino-section-plot_table
-      tool: cramino
-      title: GC
-      description: Relative GC content (excluding Ns)
+      - anchor: cramino-section-plot
+        metric: col10
+        section_key: cramino-section-plot_table
+        tool: cramino
+        title: GC
+        description: Relative GC content (excluding Ns)
     title: GC
     description: Relative GC content (excluding Ns)
   samtools.flagstat_total:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: flagstat_total
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Total Reads
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: flagstat_total
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Total Reads
+        shared_key: read_count
     title: Total Reads
     description: Total Reads
     unit: reads  M
     shared_key: read_count
   samtools.total_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: total_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Total Passed QC
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: total_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Total Passed QC
+        shared_key: read_count
     title: Total Passed QC
     description: Total Passed QC
     unit: reads  M
     shared_key: read_count
   samtools.mapped_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: mapped_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Mapped
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: mapped_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Mapped
+        shared_key: read_count
     title: Mapped
     description: Mapped
     unit: reads  M
     shared_key: read_count
   samtools.secondary_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: secondary_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Secondary Alignments
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: secondary_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Secondary Alignments
+        shared_key: read_count
     title: Secondary Alignments
     description: Secondary Alignments
     unit: reads  M
     shared_key: read_count
   samtools.supplementary_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: supplementary_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Supplementary Alignments
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: supplementary_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Supplementary Alignments
+        shared_key: read_count
     title: Supplementary Alignments
     description: Supplementary Alignments
     unit: reads  M
     shared_key: read_count
   samtools.duplicates_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: duplicates_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Duplicates
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: duplicates_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Duplicates
+        shared_key: read_count
     title: Duplicates
     description: Duplicates
     unit: reads  M
     shared_key: read_count
   samtools.paired_in_sequencing_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: paired in sequencing_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Paired in Sequencing
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: paired in sequencing_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Paired in Sequencing
+        shared_key: read_count
     title: Paired in Sequencing
     description: Paired in Sequencing
     unit: reads  M
     shared_key: read_count
   samtools.properly_paired_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: properly paired_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Properly Paired
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: properly paired_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Properly Paired
+        shared_key: read_count
     title: Properly Paired
     description: Properly Paired
     unit: reads  M
     shared_key: read_count
   samtools.with_itself_and_mate_mapped_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: with itself and mate mapped_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Self and mate mapped
-      description: Reads with itself and mate mapped
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: with itself and mate mapped_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Self and mate mapped
+        description: Reads with itself and mate mapped
+        shared_key: read_count
     title: Self and mate mapped
     description: Reads with itself and mate mapped
     unit: reads  M
     shared_key: read_count
   samtools.singletons_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: singletons_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Singletons
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: singletons_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Singletons
+        shared_key: read_count
     title: Singletons
     description: Singletons
     unit: reads  M
     shared_key: read_count
   samtools.with_mate_mapped_to_a_different_chr_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: with mate mapped to a different chr_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Mate mapped to diff chr
-      description: Mate mapped to different chromosome
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: with mate mapped to a different chr_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Mate mapped to diff chr
+        description: Mate mapped to different chromosome
+        shared_key: read_count
     title: Mate mapped to diff chr
     description: Mate mapped to different chromosome
     unit: reads  M
     shared_key: read_count
   samtools.with_mate_mapped_to_a_different_chr_mapq_5_passed:
     sources:
-    - anchor: samtools-flagstat-table
-      metric: with mate mapped to a different chr (mapQ >= 5)_passed
-      section_key: samtools-flagstat-table_table
-      tool: samtools
-      title: Diff chr (mapQ >= 5)
-      description: Mate mapped to different chromosome (mapQ >= 5)
-      shared_key: read_count
+      - anchor: samtools-flagstat-table
+        metric: with mate mapped to a different chr (mapQ >= 5)_passed
+        section_key: samtools-flagstat-table_table
+        tool: samtools
+        title: Diff chr (mapQ >= 5)
+        description: Mate mapped to different chromosome (mapQ >= 5)
+        shared_key: read_count
     title: Diff chr (mapQ >= 5)
     description: Mate mapped to different chromosome (mapQ >= 5)
     unit: reads  M
     shared_key: read_count
   samtools.flagstat_total_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: flagstat_total_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Total Reads
+      - anchor: samtools-flagstat-pct-table
+        metric: flagstat_total_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Total Reads
     title: Total Reads
     description: Total Reads
-    unit: '%'
+    unit: "%"
   samtools.total_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: total_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Total Passed QC
+      - anchor: samtools-flagstat-pct-table
+        metric: total_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Total Passed QC
     title: Total Passed QC
     description: Total Passed QC
-    unit: '%'
+    unit: "%"
   samtools.mapped_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: mapped_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Mapped
+      - anchor: samtools-flagstat-pct-table
+        metric: mapped_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Mapped
     title: Mapped
     description: Mapped
-    unit: '%'
+    unit: "%"
   samtools.secondary_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: secondary_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Secondary Alignments
+      - anchor: samtools-flagstat-pct-table
+        metric: secondary_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Secondary Alignments
     title: Secondary Alignments
     description: Secondary Alignments
-    unit: '%'
+    unit: "%"
   samtools.supplementary_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: supplementary_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Supplementary Alignments
+      - anchor: samtools-flagstat-pct-table
+        metric: supplementary_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Supplementary Alignments
     title: Supplementary Alignments
     description: Supplementary Alignments
-    unit: '%'
+    unit: "%"
   samtools.duplicates_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: duplicates_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Duplicates
+      - anchor: samtools-flagstat-pct-table
+        metric: duplicates_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Duplicates
     title: Duplicates
     description: Duplicates
-    unit: '%'
+    unit: "%"
   samtools.paired_in_sequencing_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: paired in sequencing_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Paired in Sequencing
+      - anchor: samtools-flagstat-pct-table
+        metric: paired in sequencing_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Paired in Sequencing
     title: Paired in Sequencing
     description: Paired in Sequencing
-    unit: '%'
+    unit: "%"
   samtools.properly_paired_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: properly paired_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Properly Paired
+      - anchor: samtools-flagstat-pct-table
+        metric: properly paired_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Properly Paired
     title: Properly Paired
     description: Properly Paired
-    unit: '%'
+    unit: "%"
   samtools.with_itself_and_mate_mapped_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: with itself and mate mapped_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Self and mate mapped
+      - anchor: samtools-flagstat-pct-table
+        metric: with itself and mate mapped_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Self and mate mapped
     title: Self and mate mapped
     description: Self and mate mapped
-    unit: '%'
+    unit: "%"
   samtools.singletons_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: singletons_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Singletons
+      - anchor: samtools-flagstat-pct-table
+        metric: singletons_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Singletons
     title: Singletons
     description: Singletons
-    unit: '%'
+    unit: "%"
   samtools.with_mate_mapped_to_a_different_chr_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: with mate mapped to a different chr_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Mate mapped to diff chr
+      - anchor: samtools-flagstat-pct-table
+        metric: with mate mapped to a different chr_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Mate mapped to diff chr
     title: Mate mapped to diff chr
     description: Mate mapped to diff chr
-    unit: '%'
+    unit: "%"
   samtools.with_mate_mapped_to_a_different_chr_mapq_5_passed_pct:
     sources:
-    - anchor: samtools-flagstat-pct-table
-      metric: with mate mapped to a different chr (mapQ >= 5)_passed_pct
-      section_key: samtools-flagstat-pct-table_table
-      tool: samtools
-      title: Diff chr (mapQ >= 5)
+      - anchor: samtools-flagstat-pct-table
+        metric: with mate mapped to a different chr (mapQ >= 5)_passed_pct
+        section_key: samtools-flagstat-pct-table_table
+        tool: samtools
+        title: Diff chr (mapQ >= 5)
     title: Diff chr (mapQ >= 5)
     description: Diff chr (mapQ >= 5)
-    unit: '%'
+    unit: "%"
   nanostat.median_read_length_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Median read length_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Median length
-      description: Median read length (bp)
-      shared_key: nucleotides
+      - anchor: nanostat_fastq_stats_table
+        metric: Median read length_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Median length
+        description: Median read length (bp)
+        shared_key: nucleotides
     title: Median length
     description: Median read length (bp)
-    unit: ' bp'
+    unit: " bp"
     shared_key: nucleotides
   nanostat.mean_read_length_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Mean read length_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Mean length
-      description: Mean read length (bp)
-      shared_key: nucleotides
+      - anchor: nanostat_fastq_stats_table
+        metric: Mean read length_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Mean length
+        description: Mean read length (bp)
+        shared_key: nucleotides
     title: Mean length
     description: Mean read length (bp)
-    unit: ' bp'
+    unit: " bp"
     shared_key: nucleotides
   nanostat.read_length_n50_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Read length N50_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Read N50
-      description: Read length N50
+      - anchor: nanostat_fastq_stats_table
+        metric: Read length N50_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Read N50
+        description: Read length N50
     title: Read N50
     description: Read length N50
-    unit: ' bp'
+    unit: " bp"
   nanostat.median_read_quality_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Median read quality_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Median Qual
-      description: Median read quality (Phred scale)
-      shared_key: phred_score
+      - anchor: nanostat_fastq_stats_table
+        metric: Median read quality_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Median Qual
+        description: Median read quality (Phred scale)
+        shared_key: phred_score
     title: Median Qual
     description: Median read quality (Phred scale)
     shared_key: phred_score
   nanostat.mean_read_quality_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Mean read quality_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Mean Qual
-      description: Mean read quality (Phred scale)
-      shared_key: phred_score
+      - anchor: nanostat_fastq_stats_table
+        metric: Mean read quality_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Mean Qual
+        description: Mean read quality (Phred scale)
+        shared_key: phred_score
     title: Mean Qual
     description: Mean read quality (Phred scale)
     shared_key: phred_score
   nanostat.number_of_reads_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Number of reads_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: '# Reads (K)'
-      description: Number of reads (thousands)
-      shared_key: long_read_count
-    title: '# Reads (K)'
+      - anchor: nanostat_fastq_stats_table
+        metric: Number of reads_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: "# Reads (K)"
+        description: Number of reads (thousands)
+        shared_key: long_read_count
+    title: "# Reads (K)"
     description: Number of reads (thousands)
-    unit: ' K'
+    unit: " K"
     shared_key: long_read_count
   nanostat.total_bases_fastq:
     sources:
-    - anchor: nanostat_fastq_stats_table
-      metric: Total bases_fastq
-      section_key: nanostat_fastq_stats_table_table
-      tool: nanostat
-      title: Total Bases (Mb)
-      description: Total bases (millions)
-      shared_key: base_count
+      - anchor: nanostat_fastq_stats_table
+        metric: Total bases_fastq
+        section_key: nanostat_fastq_stats_table_table
+        tool: nanostat
+        title: Total Bases (Mb)
+        description: Total bases (millions)
+        shared_key: base_count
     title: Total Bases (Mb)
     description: Total bases (millions)
     unit: bases  Mb
     shared_key: base_count
   fastp.after_filtering_q30_rate:
     sources:
-    - anchor: general_stats_table
-      metric: after_filtering_q30_rate
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: '% > Q30'
-      description: Percentage of reads > Q30 after filtering
-    title: '% > Q30'
+      - anchor: general_stats_table
+        metric: after_filtering_q30_rate
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: "% > Q30"
+        description: Percentage of reads > Q30 after filtering
+    title: "% > Q30"
     description: Percentage of reads > Q30 after filtering
-    unit: '%'
+    unit: "%"
   fastp.after_filtering_q30_bases:
     sources:
-    - anchor: general_stats_table
-      metric: after_filtering_q30_bases
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: Mb Q30 bases
-      description: Bases > Q30 after filtering (millions)
-      shared_key: base_count
+      - anchor: general_stats_table
+        metric: after_filtering_q30_bases
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: Mb Q30 bases
+        description: Bases > Q30 after filtering (millions)
+        shared_key: base_count
     title: Mb Q30 bases
     description: Bases > Q30 after filtering (millions)
     unit: bases  Mb
     shared_key: base_count
   fastp.filtering_result_passed_filter_reads:
     sources:
-    - anchor: general_stats_table
-      metric: filtering_result_passed_filter_reads
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: Reads After Filtering
-      description: Total reads after filtering (millions)
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: filtering_result_passed_filter_reads
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: Reads After Filtering
+        description: Total reads after filtering (millions)
+        shared_key: read_count
     title: Reads After Filtering
     description: Total reads after filtering (millions)
     unit: reads  M
     shared_key: read_count
   fastp.after_filtering_gc_content:
     sources:
-    - anchor: general_stats_table
-      metric: after_filtering_gc_content
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: GC content
-      description: GC content after filtering
+      - anchor: general_stats_table
+        metric: after_filtering_gc_content
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: GC content
+        description: GC content after filtering
     title: GC content
     description: GC content after filtering
-    unit: '%'
+    unit: "%"
   fastp.pct_surviving:
     sources:
-    - anchor: general_stats_table
-      metric: pct_surviving
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: '% PF'
-      description: Percent reads passing filter
-    title: '% PF'
+      - anchor: general_stats_table
+        metric: pct_surviving
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: "% PF"
+        description: Percent reads passing filter
+    title: "% PF"
     description: Percent reads passing filter
-    unit: '%'
+    unit: "%"
   fastp.pct_adapter:
     sources:
-    - anchor: general_stats_table
-      metric: pct_adapter
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: '% Adapter'
-      description: Percentage adapter-trimmed reads
-    title: '% Adapter'
+      - anchor: general_stats_table
+        metric: pct_adapter
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: "% Adapter"
+        description: Percentage adapter-trimmed reads
+    title: "% Adapter"
     description: Percentage adapter-trimmed reads
-    unit: '%'
+    unit: "%"
   fastp.pct_duplication:
     sources:
-    - anchor: general_stats_table
-      metric: pct_duplication
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: '% Duplication'
-      description: Duplication rate before filtering
-    title: '% Duplication'
+      - anchor: general_stats_table
+        metric: pct_duplication
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: "% Duplication"
+        description: Duplication rate before filtering
+    title: "% Duplication"
     description: Duplication rate before filtering
-    unit: '%'
+    unit: "%"
   fastp.before_filtering_read1_mean_length:
     sources:
-    - anchor: general_stats_table
-      metric: before_filtering_read1_mean_length
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: Mean R1 Length
-      description: Mean read length of R1
+      - anchor: general_stats_table
+        metric: before_filtering_read1_mean_length
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: Mean R1 Length
+        description: Mean read length of R1
     title: Mean R1 Length
     description: Mean read length of R1
     unit: bp
   fastp.before_filtering_read2_mean_length:
     sources:
-    - anchor: general_stats_table
-      metric: before_filtering_read2_mean_length
-      section_key: fastp
-      tool: fastp
-      namespace: FastP
-      title: Mean R2 Length
-      description: Mean read length of R2
+      - anchor: general_stats_table
+        metric: before_filtering_read2_mean_length
+        section_key: fastp
+        tool: fastp
+        namespace: FastP
+        title: Mean R2 Length
+        description: Mean read length of R2
     title: Mean R2 Length
     description: Mean read length of R2
     unit: bp
   samtools_stats.flagstat_total:
     sources:
-    - anchor: general_stats_table
-      metric: flagstat_total
-      section_key: samtools
-      tool: samtools_stats
-      namespace: 'samtools stats: flagstat'
-      title: Total Reads
-      description: Total reads from flagstat
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: flagstat_total
+        section_key: samtools
+        tool: samtools_stats
+        namespace: "samtools stats: flagstat"
+        title: Total Reads
+        description: Total reads from flagstat
+        shared_key: read_count
     title: Total Reads
     description: Total reads from flagstat
     unit: reads  M
     shared_key: read_count
   mosdepth_coverage.1_x_pc:
     sources:
-    - anchor: general_stats_table
-      metric: 1_x_pc
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: ≥ 1X
-      description: Fraction of genome with at least 1X coverage
+      - anchor: general_stats_table
+        metric: 1_x_pc
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: ≥ 1X
+        description: Fraction of genome with at least 1X coverage
     title: ≥ 1X
     description: Fraction of genome with at least 1X coverage
-    unit: '%'
+    unit: "%"
   mosdepth_coverage.5_x_pc:
     sources:
-    - anchor: general_stats_table
-      metric: 5_x_pc
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: ≥ 5X
-      description: Fraction of genome with at least 5X coverage
+      - anchor: general_stats_table
+        metric: 5_x_pc
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: ≥ 5X
+        description: Fraction of genome with at least 5X coverage
     title: ≥ 5X
     description: Fraction of genome with at least 5X coverage
-    unit: '%'
+    unit: "%"
   mosdepth_coverage.10_x_pc:
     sources:
-    - anchor: general_stats_table
-      metric: 10_x_pc
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: ≥ 10X
-      description: Fraction of genome with at least 10X coverage
+      - anchor: general_stats_table
+        metric: 10_x_pc
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: ≥ 10X
+        description: Fraction of genome with at least 10X coverage
     title: ≥ 10X
     description: Fraction of genome with at least 10X coverage
-    unit: '%'
+    unit: "%"
   mosdepth_coverage.30_x_pc:
     sources:
-    - anchor: general_stats_table
-      metric: 30_x_pc
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: ≥ 30X
-      description: Fraction of genome with at least 30X coverage
+      - anchor: general_stats_table
+        metric: 30_x_pc
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: ≥ 30X
+        description: Fraction of genome with at least 30X coverage
     title: ≥ 30X
     description: Fraction of genome with at least 30X coverage
-    unit: '%'
+    unit: "%"
   mosdepth_coverage.50_x_pc:
     sources:
-    - anchor: general_stats_table
-      metric: 50_x_pc
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: ≥ 50X
-      description: Fraction of genome with at least 50X coverage
+      - anchor: general_stats_table
+        metric: 50_x_pc
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: ≥ 50X
+        description: Fraction of genome with at least 50X coverage
     title: ≥ 50X
     description: Fraction of genome with at least 50X coverage
-    unit: '%'
+    unit: "%"
   mosdepth_coverage.median_coverage:
     sources:
-    - anchor: general_stats_table
-      metric: median_coverage
-      section_key: mosdepth
-      tool: mosdepth_coverage
-      namespace: Mosdepth coverage
-      title: Median
-      description: Median coverage
+      - anchor: general_stats_table
+        metric: median_coverage
+        section_key: mosdepth
+        tool: mosdepth_coverage
+        namespace: Mosdepth coverage
+        title: Median
+        description: Median coverage
     title: Median
     description: Median coverage
     unit: X
   bcftools_stats.number_of_records:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_records
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: Vars
-      description: Variations total
+      - anchor: general_stats_table
+        metric: number_of_records
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: Vars
+        description: Variations total
     title: Vars
     description: Variations total
   bcftools_stats.number_of_snps:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_SNPs
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: SNP
-      description: Variation SNPs
+      - anchor: general_stats_table
+        metric: number_of_SNPs
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: SNP
+        description: Variation SNPs
     title: SNP
     description: Variation SNPs
   bcftools_stats.number_of_indels:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_indels
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: Indel
-      description: Variation Insertions/Deletions
+      - anchor: general_stats_table
+        metric: number_of_indels
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: Indel
+        description: Variation Insertions/Deletions
     title: Indel
     description: Variation Insertions/Deletions
   bcftools_stats.tstv:
     sources:
-    - anchor: general_stats_table
-      metric: tstv
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: Ts/Tv
-      description: Variant SNP transition / transversion ratio
+      - anchor: general_stats_table
+        metric: tstv
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: Ts/Tv
+        description: Variant SNP transition / transversion ratio
     title: Ts/Tv
     description: Variant SNP transition / transversion ratio
   bcftools_stats.number_of_mnps:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_MNPs
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: MNP
-      description: Variation multinucleotide polymorphisms
+      - anchor: general_stats_table
+        metric: number_of_MNPs
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: MNP
+        description: Variation multinucleotide polymorphisms
     title: MNP
     description: Variation multinucleotide polymorphisms
   bcftools_stats.number_of_multiallelic_sites:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_multiallelic_sites
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: Multiallelic
-      description: Variation sites with multiple alleles
+      - anchor: general_stats_table
+        metric: number_of_multiallelic_sites
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: Multiallelic
+        description: Variation sites with multiple alleles
     title: Multiallelic
     description: Variation sites with multiple alleles
   bcftools_stats.number_of_multiallelic_snp_sites:
     sources:
-    - anchor: general_stats_table
-      metric: number_of_multiallelic_SNP_sites
-      section_key: bcftools
-      tool: bcftools_stats
-      namespace: 'bcftools stats: Stats'
-      title: Multiallelic SNP
-      description: Variation sites with multiple SNPs
+      - anchor: general_stats_table
+        metric: number_of_multiallelic_SNP_sites
+        section_key: bcftools
+        tool: bcftools_stats
+        namespace: "bcftools stats: Stats"
+        title: Multiallelic SNP
+        description: Variation sites with multiple SNPs
     title: Multiallelic SNP
     description: Variation sites with multiple SNPs
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.tss_enrichment:
     sources:
-    - anchor: general_stats_table
-      metric: tss_enrichment
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: TSS Enrichment
-      description: Transcription start site enrichment score
+      - anchor: general_stats_table
+        metric: tss_enrichment
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: TSS Enrichment
+        description: Transcription start site enrichment score
     title: TSS Enrichment
     description: Transcription start site enrichment score
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.hqaa_percent:
     sources:
-    - anchor: general_stats_table
-      metric: hqaa_percent
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: HQAA in peaks
-      description: Percentage of high-quality autosomal alignments overlapping peaks
+      - anchor: general_stats_table
+        metric: hqaa_percent
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: HQAA in peaks
+        description: Percentage of high-quality autosomal alignments overlapping peaks
     title: HQAA in peaks
     description: Percentage of high-quality autosomal alignments overlapping peaks
-    unit: '%'
+    unit: "%"
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.total_reads:
     sources:
-    - anchor: general_stats_table
-      metric: total_reads
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: Total Reads
-      description: Total number of paired reads
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: total_reads
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: Total Reads
+        description: Total number of paired reads
+        shared_key: read_count
     title: Total Reads
     description: Total number of paired reads
     unit: reads  M
     shared_key: read_count
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.hqaa:
     sources:
-    - anchor: general_stats_table
-      metric: hqaa
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: HQAA
-      description: Number of high-quality autosomal alignments
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: hqaa
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: HQAA
+        description: Number of high-quality autosomal alignments
+        shared_key: read_count
     title: HQAA
     description: Number of high-quality autosomal alignments
     unit: reads  M
     shared_key: read_count
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.mean_mapq:
     sources:
-    - anchor: general_stats_table
-      metric: mean_mapq
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: Mean MAPQ
-      description: Mean mapping quality score
+      - anchor: general_stats_table
+        metric: mean_mapq
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: Mean MAPQ
+        description: Mean mapping quality score
     title: Mean MAPQ
     description: Mean mapping quality score
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.median_mapq:
     sources:
-    - anchor: general_stats_table
-      metric: median_mapq
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: Median MAPQ
-      description: Median mapping quality score
+      - anchor: general_stats_table
+        metric: median_mapq
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: Median MAPQ
+        description: Median mapping quality score
     title: Median MAPQ
     description: Median mapping quality score
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.hqaa_mononucleosomal_count:
     sources:
-    - anchor: general_stats_table
-      metric: hqaa_mononucleosomal_count
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: Mono-nuc
-      description: Number of high-quality autosomal alignments in mononucleosomal
-        length range
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: hqaa_mononucleosomal_count
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: Mono-nuc
+        description: Number of high-quality autosomal alignments in mononucleosomal
+          length range
+        shared_key: read_count
     title: Mono-nuc
     description: Number of high-quality autosomal alignments in mononucleosomal length
       range
@@ -837,15 +837,15 @@ concepts:
     shared_key: read_count
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.hqaa_tf_count:
     sources:
-    - anchor: general_stats_table
-      metric: hqaa_tf_count
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: TF Footprint
-      description: Number of high-quality autosomal alignments in transcription factor
-        footprint length range
-      shared_key: read_count
+      - anchor: general_stats_table
+        metric: hqaa_tf_count
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: TF Footprint
+        description: Number of high-quality autosomal alignments in transcription factor
+          footprint length range
+        shared_key: read_count
     title: TF Footprint
     description: Number of high-quality autosomal alignments in transcription factor
       footprint length range
@@ -853,44 +853,44 @@ concepts:
     shared_key: read_count
   toolkit_for_quality_control_and_visualization_of_atac_seq_data.max_fraction_reads_from_single_autosome:
     sources:
-    - anchor: general_stats_table
-      metric: max_fraction_reads_from_single_autosome
-      section_key: ataqv
-      tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
-      namespace: Toolkit for quality control and visualization of ATAC-seq data.
-      title: Max Chr%
-      description: Maximum fraction of reads from a single autosome
+      - anchor: general_stats_table
+        metric: max_fraction_reads_from_single_autosome
+        section_key: ataqv
+        tool: toolkit_for_quality_control_and_visualization_of_atac_seq_data
+        namespace: Toolkit for quality control and visualization of ATAC-seq data.
+        title: Max Chr%
+        description: Maximum fraction of reads from a single autosome
     title: Max Chr%
     description: Maximum fraction of reads from a single autosome
-  ? computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data.estimated_fragment_length_bp
-  : sources:
-    - anchor: general_stats_table
-      metric: Estimated_Fragment_Length_bp
-      section_key: phantompeakqualtools
-      tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
-      namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
-        data.
-      title: Frag Length
-      description: Estimated fragment length (bp)
+  computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data.estimated_fragment_length_bp:
+    sources:
+      - anchor: general_stats_table
+        metric: Estimated_Fragment_Length_bp
+        section_key: phantompeakqualtools
+        tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
+        namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
+          data.
+        title: Frag Length
+        description: Estimated fragment length (bp)
     title: Frag Length
     description: Estimated fragment length (bp)
   computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data.nsc:
     sources:
-    - anchor: general_stats_table
-      metric: NSC
-      section_key: phantompeakqualtools
-      tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
-      namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
-        data.
-      description: Normalized strand cross-correlation
+      - anchor: general_stats_table
+        metric: NSC
+        section_key: phantompeakqualtools
+        tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
+        namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
+          data.
+        description: Normalized strand cross-correlation
     description: Normalized strand cross-correlation
   computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data.rsc:
     sources:
-    - anchor: general_stats_table
-      metric: RSC
-      section_key: phantompeakqualtools
-      tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
-      namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
-        data.
-      description: Relative strand cross-correlation
+      - anchor: general_stats_table
+        metric: RSC
+        section_key: phantompeakqualtools
+        tool: computes_informative_enrichment_and_quality_measures_for_chip_seq_dnase_seq_faire_seq_mnase_seq_data
+        namespace: Computes informative enrichment and quality measures for ChIP-seq/DNase-seq/FAIRE-seq/MNase-seq
+          data.
+        description: Relative strand cross-correlation
     description: Relative strand cross-correlation

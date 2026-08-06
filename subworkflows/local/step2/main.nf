@@ -31,8 +31,8 @@ workflow STEP2 {
     ch_versions      = channel.empty()
     ch_multiqc_files = channel.empty()
 
-    def needs_fai = tools.contains('picard_collectmultiplemetrics') || 
-                    tools.contains('methyldackel') || 
+    def needs_fai = tools.contains('picard_collectmultiplemetrics') ||
+                    tools.contains('methyldackel') ||
                     tools.contains('ngsbits_samplegender')
 
     if (!params.fasta_fai && needs_fai) {
@@ -45,13 +45,18 @@ workflow STEP2 {
         ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
     }
 
-    samplesheet.branch { _meta, _bam, index ->
+    ch_bam_for_metrics = samplesheet.filter { meta, bam, index ->
+        def alignment_status = meta.alignment_status instanceof List ? '' : meta.alignment_status?.toString()?.toLowerCase()
+        !(alignment_status in ["unaligned", "unmapped"])
+    }
+
+    ch_bam_for_metrics.branch { meta, bam, index ->
         has_index: index
         no_index: !index
     }.set { ch_bam_indexed_split }
 
-    SAMTOOLS_INDEX ( 
-        ch_bam_indexed_split.no_index.map { meta, bam, _index -> tuple(meta, bam) }, 
+    SAMTOOLS_INDEX (
+        ch_bam_indexed_split.no_index.map { meta, bam, _index -> tuple(meta, bam) },
     )
 
     ch_newly_indexed = ch_bam_indexed_split.no_index
@@ -62,7 +67,7 @@ workflow STEP2 {
 
     if (tools.contains('sambamba_flagstat')) {
         // CRAM files crashing Sambamba
-        ch_final_bam_indexed.branch { _meta, file, _index -> 
+        ch_final_bam_indexed.branch { _meta, file, _index ->
             bams:  file.name.endsWith('.bam')
             crams: file.name.endsWith('.cram')
         }.set { ch_flagstat_split }
@@ -105,15 +110,16 @@ workflow STEP2 {
 
     // Mosdepth: WGS needs no intervals while targeted methods need intervals
     if (tools.contains('mosdepth')) {
-        
+
         // Prepare targeted samples (WES, ATAC, CHIP, Methylation) - combine with intervals if provided, if not add empty list as placeholder
         ch_mosdepth_targeted = ch_assay_split.wes.mix(ch_assay_split.atac, ch_assay_split.chip, ch_assay_split.meth)
-            .combine(ch_intervals.ifEmpty([[:], []])) 
-            .map { meta, file, index, meta_int, intervals -> 
-                def final_intervals = intervals instanceof List ? [] : intervals
-                return tuple(meta, file, index, final_intervals) 
+            .combine(ch_intervals.ifEmpty([[:], []]))
+            .map { meta, file, index, meta_int, intervals ->
+                def target_bed = meta.target_bed instanceof List ? '' : meta.target_bed?.toString()
+                def final_intervals = target_bed ? file(target_bed, checkIfExists: true) : (intervals instanceof List ? [] : intervals)
+                return tuple(meta, file, index, final_intervals)
             }
-        
+
         // Prepare other samples (WGS, cfDNA)
         ch_mosdepth_other = ch_assay_split.wgs.mix(ch_assay_split.cfdna, ch_assay_split.longread)
             .map { meta, file, index -> tuple(meta, file, index, []) }
@@ -125,7 +131,7 @@ workflow STEP2 {
             ch_mosdepth_in,
             ch_fasta
         )
-        
+
         ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.global_txt.map { _meta, file -> file }.collect())
         ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.regions_txt.map { _meta, file -> file }.collect())
         ch_versions = ch_versions.mix(MOSDEPTH.out.versions)
@@ -139,16 +145,16 @@ workflow STEP2 {
          ch_multiqc_files = ch_multiqc_files.mix(PRESEQ_LCEXTRAP.out.lc_extrap.map { _meta, file -> file }.collect())
     }
     ch_verifybamid_in = ch_assay_split.wgs.mix(ch_assay_split.wes)
-    
+
     // Filter out cram files so only bam files proceed
-    ch_verifybamid_bam_only = ch_verifybamid_in.filter { _meta, file, _index -> 
-        file.name.endsWith('.bam') 
+    ch_verifybamid_bam_only = ch_verifybamid_in.filter { _meta, file, _index ->
+        file.name.endsWith('.bam')
     }
     if (ch_refvcf){
         if (tools.contains('verifybamid')) {
             VERIFYBAMID_VERIFYBAMID(
                 ch_verifybamid_bam_only,
-                ch_refvcf     
+                ch_refvcf
             )
             ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.selfsm.map { _meta, file -> file }.collect())
             ch_multiqc_files = ch_multiqc_files.mix(VERIFYBAMID_VERIFYBAMID.out.log.map { _meta, file -> file }.collect())
@@ -191,7 +197,7 @@ workflow STEP2 {
     }
 
     if (tools.contains('ngsbits_samplegender')) {
-        ch_ngsbits_in = ch_assay_split.wgs.filter { meta, _bam, _bai -> 
+        ch_ngsbits_in = ch_assay_split.wgs.filter { meta, _bam, _bai ->
             def sex = meta.sex?.toString()?.trim()?.toUpperCase()
             return !sex || sex in ['NA', 'UNKNOWN', 'NULL', '']
         }
@@ -215,5 +221,5 @@ workflow STEP2 {
 
     emit:
     ch_versions          = ch_versions
-    ch_multiqc_files     = ch_multiqc_files 
+    ch_multiqc_files     = ch_multiqc_files
 }

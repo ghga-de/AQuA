@@ -34,8 +34,8 @@ import argparse
 import csv
 import json
 import os
+import re
 from collections import Counter
-from itertools import zip_longest
 
 ##########################
 ### Method resolution  ###
@@ -81,6 +81,122 @@ def get_analysis_method(analysis_method_record: dict) -> str:
         return "unknown"
     ana_type = analysis_method_record.get("type", "")
     return LIBRARY_TYPE_MAP.get(ana_type, ana_type.lower() or "unknown")
+
+
+def _first_value(record: dict, keys: tuple[str, ...]) -> str:
+    """Return the first non-empty scalar/list value from a metadata record."""
+    for key in keys:
+        value = record.get(key)
+        if value is None or value == "":
+            continue
+        values = _as_list(value)
+        return ";".join(values) if values else str(value).strip()
+    return ""
+
+
+def get_analysis_tool(analysis: dict, analysis_method_record: dict) -> str:
+    """Extract a human-readable analysis tool or workflow name when available."""
+    return _first_value(
+        analysis,
+        (
+            "analysis_tool",
+            "tool",
+            "tools",
+            "software",
+            "software_name",
+            "workflow",
+            "workflow_name",
+            "pipeline",
+            "pipeline_name",
+        ),
+    ) or _first_value(
+        analysis_method_record,
+        (
+            "analysis_tool",
+            "tool",
+            "tools",
+            "software",
+            "software_name",
+            "workflow",
+            "workflow_name",
+            "pipeline",
+            "pipeline_name",
+            "name",
+        ),
+    )
+
+
+def get_analysis_genome(analysis: dict, analysis_method_record: dict) -> str:
+    """Extract reference genome / assembly metadata when the submission provides it."""
+    return _first_value(
+        analysis,
+        (
+            "analysis_genome",
+            "reference_genome",
+            "reference_assembly",
+            "genome_assembly",
+            "genome",
+            "assembly",
+            "reference",
+        ),
+    ) or _first_value(
+        analysis_method_record,
+        (
+            "analysis_genome",
+            "reference_genome",
+            "reference_assembly",
+            "genome_assembly",
+            "genome",
+            "assembly",
+            "reference",
+        ),
+    )
+
+
+def get_target_bed(analysis: dict, analysis_method_record: dict) -> str:
+    """Extract target BED / interval-set metadata when available."""
+    return _first_value(
+        analysis,
+        (
+            "target_bed",
+            "bed",
+            "bed_file",
+            "capture_bed",
+            "target_intervals",
+            "target_interval_file",
+            "intervals",
+            "panel_bed",
+        ),
+    ) or _first_value(
+        analysis_method_record,
+        (
+            "target_bed",
+            "bed",
+            "bed_file",
+            "capture_bed",
+            "target_intervals",
+            "target_interval_file",
+            "intervals",
+            "panel_bed",
+        ),
+    )
+
+
+def get_alignment_status(analysis: dict, file_record: dict) -> str:
+    """Return aligned/unaligned status if metadata names it explicitly."""
+    raw = _first_value(
+        file_record,
+        ("alignment_status", "read_alignment_status", "aligned", "is_aligned"),
+    ) or _first_value(
+        analysis,
+        ("alignment_status", "read_alignment_status", "aligned", "is_aligned"),
+    )
+    value = raw.strip().lower()
+    if value in {"true", "yes", "aligned"}:
+        return "aligned"
+    if value in {"false", "no", "unaligned", "unmapped"}:
+        return "unaligned"
+    return value
 
 
 def get_single_end(exp_method: dict) -> str:
@@ -200,11 +316,21 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
     """
     Sort a flat list of file records into typed buckets.
     Falls back to filename extension when format field is missing/ambiguous.
-    Returns a dict with keys: fastq_1, fastq_2, bam, bai, cram, crai, vcf, other.
+    Returns a dict with keys: fastq_1, fastq_2, bam, bai, cram, crai, vcf, bed, other.
     """
     buckets: dict[str, list] = {
         k: []
-        for k in ("fastq_1", "fastq_2", "bam", "bai", "cram", "crai", "vcf", "other")
+        for k in (
+            "fastq_1",
+            "fastq_2",
+            "bam",
+            "bai",
+            "cram",
+            "crai",
+            "vcf",
+            "bed",
+            "other",
+        )
     }
     seen: set = set()
 
@@ -243,6 +369,8 @@ def classify_files(files: list[dict], input_directory: str) -> dict[str, list]:
         elif fmt == "VCF" or low.endswith((".vcf", ".vcf.gz")):
             # BCF intentionally excluded: not a schema-allowed column
             buckets["vcf"].append(path)
+        elif fmt in {"BED", "BED12"} or low.endswith((".bed", ".bed.gz")):
+            buckets["bed"].append(path)
         else:
             # FAST5, FASTA, UBAM, SAM, BCF and any other non-schema formats
             buckets["other"].append(path)
@@ -269,15 +397,20 @@ def buckets_to_rows(
     """
     file_rows = []
 
-    for f1, f2 in zip_longest(buckets["fastq_1"], buckets["fastq_2"]):
-        if not f2 and single_end == "false":
-            warnings.append(
-                f"[{context}] PE experiment is missing fastq_2 for fastq_1={f1!r}; "
-                "single_end kept as 'false' from metadata — check for missing R2 file."
-            )
-        file_rows.append(
-            {"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": single_end}
+    file_rows.extend(
+        pair_fastqs(buckets["fastq_1"], buckets["fastq_2"], single_end, warnings, context)
+    )
+    target_bed = buckets["bed"][0] if buckets["bed"] else ""
+    if len(buckets["bed"]) > 1:
+        warnings.append(
+            f"[{context}] multiple BED files found; using {target_bed!r} as target_bed "
+            f"and ignoring {buckets['bed'][1:]}."
         )
+
+    def _with_target_bed(row: dict) -> dict:
+        if target_bed:
+            return {**row, "target_bed": target_bed}
+        return row
 
     def _stem(path: str) -> str:
         """Strip directory and all extensions to get a bare basename for index matching."""
@@ -295,18 +428,31 @@ def buckets_to_rows(
 
     for bam in buckets["bam"]:
         bai = bai_by_stem.get(_stem(bam), "")
-        file_rows.append({"bam": bam, "bai": bai, "single_end": single_end})
+        file_rows.append(
+            _with_target_bed({"bam": bam, "bai": bai, "single_end": single_end})
+        )
 
     for cram in buckets["cram"]:
         crai = crai_by_stem.get(_stem(cram), "")
-        file_rows.append({"cram": cram, "crai": crai, "single_end": single_end})
+        file_rows.append(
+            _with_target_bed({"cram": cram, "crai": crai, "single_end": single_end})
+        )
 
     for vcf in buckets["vcf"]:
-        file_rows.append({"vcf": vcf, "single_end": single_end})
+        file_rows.append(_with_target_bed({"vcf": vcf, "single_end": single_end}))
 
     if buckets["other"] and not file_rows:
         file_rows.append(
-            {"data_files": ";".join(buckets["other"]), "single_end": single_end}
+            {
+                "data_files": ";".join(buckets["other"]),
+                "target_bed": target_bed,
+                "single_end": single_end,
+            }
+        )
+
+    if target_bed and not file_rows:
+        file_rows.append(
+            {"data_files": target_bed, "target_bed": target_bed, "single_end": single_end}
         )
 
     # Return None when no files were found so the caller can skip the row
@@ -315,6 +461,68 @@ def buckets_to_rows(
         return None
 
     return file_rows
+
+
+def pair_fastqs(
+    fastq_1: list[str],
+    fastq_2: list[str],
+    single_end: str,
+    warnings: list[str],
+    context: str = "",
+) -> list[dict]:
+    """Pair FASTQs by normalized mate basename instead of only sorted position."""
+
+    def _pair_key(path: str) -> str:
+        base = os.path.basename(path).lower()
+        base = re.sub(r"\.(fastq|fq)(\.gz)?$", "", base)
+        patterns = (
+            r"([._-])r[12]([._-]?\d+)?$",
+            r"([._-])[12]$",
+            r"([._-])r[12]([._-])",
+            r"([._-])[12]([._-])",
+        )
+        for pattern in patterns:
+            stripped = re.sub(pattern, r"\1", base)
+            if stripped != base:
+                return stripped.rstrip("._-")
+        return base
+
+    r1_by_key: dict[str, list[str]] = {}
+    r2_by_key: dict[str, list[str]] = {}
+    for path in fastq_1:
+        r1_by_key.setdefault(_pair_key(path), []).append(path)
+    for path in fastq_2:
+        r2_by_key.setdefault(_pair_key(path), []).append(path)
+
+    rows = []
+    all_keys = sorted(set(r1_by_key) | set(r2_by_key))
+    for key in all_keys:
+        r1s = sorted(r1_by_key.get(key, []))
+        r2s = sorted(r2_by_key.get(key, []))
+        if len(r1s) > 1 or len(r2s) > 1:
+            warnings.append(
+                f"[{context}] ambiguous FASTQ mate group {key!r}: "
+                f"R1={r1s}, R2={r2s}; pairing by sorted order within the group."
+            )
+        max_len = max(len(r1s), len(r2s))
+        for idx in range(max_len):
+            f1 = r1s[idx] if idx < len(r1s) else ""
+            f2 = r2s[idx] if idx < len(r2s) else ""
+            if not f1:
+                warnings.append(
+                    f"[{context}] FASTQ mate group {key!r} has fastq_2={f2!r} "
+                    "without a matching fastq_1."
+                )
+            if not f2 and single_end == "false":
+                warnings.append(
+                    f"[{context}] PE experiment is missing fastq_2 for fastq_1={f1!r}; "
+                    "single_end kept as 'false' from metadata — check for missing R2 file."
+                )
+            rows.append(
+                {"fastq_1": f1 or "", "fastq_2": f2 or "", "single_end": single_end}
+            )
+
+    return rows
 
 
 #########################
@@ -350,15 +558,13 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
         disease_raw = str(sample.get("disease_or_healthy", "")).lower()
         status = 1 if ("tumor" in disease_raw or "disease" in disease_raw) else 0
 
-        ### Collect all files for this sample across all experiments and analyses.
-        ### Each file is tagged with its own provenance (exp_method_name,
-        ### ana_method_name, single_end) captured at the point of collection so
-        ### earlier files are never overwritten by later loop iterations.
-        ### Files are deduplicated by name across the whole sample.
-
-        # Each entry: (file_record, exp_method_name, ana_method_name, single_end)
-        sample_files: list[tuple[dict, str, str, str]] = []
-        seen_names: set[str] = set()
+        ### Collect files in provenance groups instead of flattening the sample.
+        ### Raw files are grouped by experiment; processed files are grouped by
+        ### analysis so BAM/CRAM/VCF rows keep their own analysis metadata.
+        file_groups: list[dict] = []
+        seen_raw_names: set[str] = set()
+        seen_process_names: set[str] = set()
+        seen_analysis_aliases: set[str] = set()
 
         for experiment in idx["sample_to_experiments"].get(sample_alias, []):
             exp_alias = experiment.get("alias", "")
@@ -367,70 +573,92 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
             exp_method_name = get_method(exp_method)  # captured for this experiment
             single_end = get_single_end(exp_method)  # captured for this experiment
 
-            ### Raw files – tagged with this experiment's provenance
+            ### Raw files – tagged with this experiment's provenance.
+            raw_files = []
             for rdf in idx["exp_to_rdfs"].get(exp_alias, []):
                 name = rdf.get("name") or rdf.get("alias") or ""
-                if name and name not in seen_names:
-                    seen_names.add(name)
-                    # ana_method_name resolved below once all analyses are known
-                    sample_files.append((rdf, exp_method_name, None, single_end))
+                if name and name not in seen_raw_names:
+                    seen_raw_names.add(name)
+                    raw_files.append(rdf)
+
+            raw_analysis_methods = []
+            for analysis in idx["exp_to_analyses"].get(exp_alias, []):
+                am_record = idx["analysis_methods"].get(
+                    analysis.get("analysis_method", ""), {}
+                )
+                raw_analysis_methods.append(get_analysis_method(am_record))
+
+            if raw_files:
+                raw_counts = Counter(raw_analysis_methods)
+                raw_analysis_method = (
+                    raw_counts.most_common(1)[0][0] if raw_counts else "unknown"
+                )
+                file_groups.append(
+                    {
+                        "files": raw_files,
+                        "experiment_method": exp_method_name,
+                        "analysis_method": raw_analysis_method,
+                        "analysis_tool": "",
+                        "analysis_genome": "",
+                        "target_bed": "",
+                        "alignment_status": "",
+                        "single_end": single_end,
+                        "context": f"{sample_alias}/{exp_alias}/raw",
+                    }
+                )
 
             ### Process files – tagged with their specific analysis provenance
             for analysis in idx["exp_to_analyses"].get(exp_alias, []):
                 analysis_alias = analysis.get("alias", "")
+                if analysis_alias in seen_analysis_aliases:
+                    continue
+                seen_analysis_aliases.add(analysis_alias)
+
                 am_alias = analysis.get("analysis_method", "")
                 am_record = idx["analysis_methods"].get(am_alias, {})
                 ana_method_name = get_analysis_method(
                     am_record
                 )  # captured for this analysis
-
+                process_files = []
                 for pdf in idx["analysis_to_pdfs"].get(analysis_alias, []):
                     name = pdf.get("name") or pdf.get("alias") or ""
-                    if name and name not in seen_names:
-                        seen_names.add(name)
-                        sample_files.append(
-                            (pdf, exp_method_name, ana_method_name, single_end)
-                        )
+                    if name and name not in seen_process_names:
+                        seen_process_names.add(name)
+                        process_files.append(pdf)
+                if not process_files:
+                    continue
 
-        if not sample_files:
+                alignment_statuses = [
+                    get_alignment_status(analysis, pdf) for pdf in process_files
+                ]
+                alignment_statuses = [status for status in alignment_statuses if status]
+                alignment_status = (
+                    Counter(alignment_statuses).most_common(1)[0][0]
+                    if alignment_statuses
+                    else ""
+                )
+                file_groups.append(
+                    {
+                        "files": process_files,
+                        "experiment_method": exp_method_name,
+                        "analysis_method": ana_method_name,
+                        "analysis_tool": get_analysis_tool(analysis, am_record),
+                        "analysis_genome": get_analysis_genome(analysis, am_record),
+                        "target_bed": get_target_bed(analysis, am_record),
+                        "alignment_status": alignment_status,
+                        "single_end": single_end,
+                        "context": f"{sample_alias}/{analysis_alias}",
+                    }
+                )
+
+        if not file_groups:
             warnings.append(
                 f"[{sample_alias}/no-files] no files found in any bucket — "
                 "skipping row to avoid writing a metadata-only entry."
             )
             continue
 
-        ### Resolve ana_method_name for raw files (am=None) using the most
-        ### common analysis method seen for this sample; ties broken by first seen.
-        ana_counts = Counter(am for _, _, am, _ in sample_files if am is not None)
-        dominant_ana_method = (
-            ana_counts.most_common(1)[0][0] if ana_counts else "unknown"
-        )
-
-        resolved_files = [
-            (f, em, am if am is not None else dominant_ana_method, se)
-            for f, em, am, se in sample_files
-        ]
-
-        ### Use provenance from the first file as the row-level method values.
-        ### Within a well-formed submission all files on a sample share the same
-        ### experiment/analysis method; if they differ the first value is used
-        ### and the per-file tags in resolved_files remain available for future use.
-        _, row_exp_method, row_ana_method, row_single_end = resolved_files[0]
-
-        ### Classify and emit once — single lane counter for the whole sample
-        all_file_records = [f for f, _, _, _ in resolved_files]
-        context = sample_alias
-        buckets = classify_files(all_file_records, input_directory)
-        file_rows = buckets_to_rows(buckets, row_single_end, warnings, context)
-
-        if file_rows is None:
-            warnings.append(
-                f"[{context}] no files found in any bucket — "
-                "skipping row to avoid writing a metadata-only entry."
-            )
-            continue
-
-        base = {
+        sample_base = {
             "sample": sample_alias,
             "individual_id": individual_id,
             "sex": sex,
@@ -440,13 +668,36 @@ def parse_metadata(metadata_path: str, input_directory: str) -> list[dict]:
             "disease_status": sample.get("disease_or_healthy", ""),
             "case_control_status": sample.get("case_control_status", ""),
             "tissue": sample.get("biospecimen_tissue_term", ""),
-            "experiment_method": row_exp_method,
-            "analysis_method": row_ana_method,
         }
 
-        for lane_num, frow in enumerate(file_rows, start=1):
-            row = {**base, "lane": f"L{lane_num:03d}", **frow}
-            rows.append(row)
+        lane_num = 1
+        for group in file_groups:
+            buckets = classify_files(group["files"], input_directory)
+            file_rows = buckets_to_rows(
+                buckets, group["single_end"], warnings, group["context"]
+            )
+
+            if file_rows is None:
+                warnings.append(
+                    f"[{group['context']}] no files found in any bucket — "
+                    "skipping row to avoid writing a metadata-only entry."
+                )
+                continue
+
+            base = {
+                **sample_base,
+                "experiment_method": group["experiment_method"],
+                "analysis_method": group["analysis_method"],
+                "analysis_tool": group["analysis_tool"],
+                "analysis_genome": group["analysis_genome"],
+                "target_bed": group["target_bed"],
+                "alignment_status": group["alignment_status"],
+            }
+
+            for frow in file_rows:
+                row = {**base, "lane": f"L{lane_num:03d}", **frow}
+                rows.append(row)
+                lane_num += 1
 
     if warnings:
         import sys
@@ -475,6 +726,10 @@ ALL_COLUMNS = [
     "tissue",
     "experiment_method",
     "analysis_method",
+    "analysis_tool",
+    "analysis_genome",
+    "target_bed",
+    "alignment_status",
     "fastq_1",
     "fastq_2",
     "single_end",

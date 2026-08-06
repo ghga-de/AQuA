@@ -91,12 +91,12 @@ workflow PIPELINE_INITIALISATION {
             else if (vcf) {
                 return [meta + [step: 3], vcf]
             }
-            else if (others){ 
+            else if (others){
                 return [meta + [step: 4], others]
             }
             else{
                 log.warn "Row for sample ${meta.id} does not contain any recognized files."
-                return [meta, null]                
+                return [meta, null]
             }
         }
         .set { ch_samplesheet }
