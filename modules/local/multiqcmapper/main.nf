@@ -24,9 +24,11 @@ process MULTIQCMAPPER {
     multiqc-mapper resolve \\
         "${multiqc_data_dir}" \\
         "${concepts_yaml}" \\
-        --output qc_metrics_unified.tsv \\
+        --output qc_metrics_unified_all.tsv \\
         --format tsv \\
         ${args}
+
+    awk -F'\\t' '\$2 != ""' qc_metrics_unified_all.tsv > qc_metrics_unified.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

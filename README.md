@@ -34,18 +34,18 @@ The following table details which tools are executed based on the analysis metho
 
 | Analysis Method     | Read QC (FastQ)                | Alignment QC (BAM)                                                               | Variant QC (VCF) |
 | :------------------ | :----------------------------- | :------------------------------------------------------------------------------- | :--------------- |
-| **WGS**             | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats, VerifyBamID, _NGSBits_, Preseq | _BCFTools Stats_ |
-| **WES / TES**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats, Preseq                         | _BCFTools Stats_ |
-| **ATAC Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, _Ataqv_, Samtools Stats, Preseq                |                  |
-| **ChIP Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_,_Sambamba flagstats_,_Phantompeakqualtools_, Samtools Stats, Preseq   |                  |
-| **RNA Seq / smRNA** | FastQC, SeqFU                  | _Samtools Stats_, _RSeQC_, Preseq                                                | _BCFTools Stats_ |
-| **Nanopore**        | _FastPLong_, _NanoPlot_, SeqFU | _Mosdepth_, _Sambamba flagstats_, _Cramino_, Samtools Stats                      | _BCFTools Stats_ |
-| **PacBio**          | _FastPLong_, _NanoPlot_        | _Mosdepth_, _Cramino_, _Sambamba flagstats_, Samtools Stats                      | _BCFTools Stats_ |
-| **MethylSeq**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, MethylDackel, _Sambamba flagstats_, Samtools Stats                   |                  |
-| **cfDNA / Other**   | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats                                 | _BCFTools Stats_ |
+| **WGS**             | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_, VerifyBamID, NGSBits, Preseq | _BCFTools Stats_ |
+| **WES / TES**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_, Preseq                         | _BCFTools Stats_ |
+| **ATAC Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, Ataqv, _Samtools Stats_, Preseq                |                  |
+| **ChIP Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_,Sambamba flagstats,Phantompeakqualtools, _Samtools Stats_, Preseq   |                  |
+| **RNA Seq / smRNA** | FastQC, SeqFU                  | _Samtools Stats_, RSeQC, Preseq                                                | _BCFTools Stats_ |
+| **Nanopore**        | _FastPLong_, _NanoPlot_, SeqFU | _Mosdepth_, Sambamba flagstats, Cramino, _Samtools Stats_                      | _BCFTools Stats_ |
+| **PacBio**          | _FastPLong_, _NanoPlot_        | _Mosdepth_, Cramino, Sambamba flagstats, _Samtools Stats_                      | _BCFTools Stats_ |
+| **MethylSeq**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, MethylDackel, Sambamba flagstats, _Samtools Stats_                   |                  |
+| **cfDNA / Other**   | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_                                 | _BCFTools Stats_ |
 
 > [!NOTE]
-> Tools in _Italic_ are used as default, yet user can add tools to the analysis uisng --analysis_tools or remove default using --skip_tools. In the case of CRAM files, instead of sambamba flagstats, samtools stats is used default.
+> Tools in _Italic_ are used as default, yet user can add tools to the analysis uisng --analysis_tools or remove default using --skip_tools. 
 
 ## Usage
 
