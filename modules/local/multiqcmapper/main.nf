@@ -29,7 +29,7 @@ process MULTIQCMAPPER {
         --format tsv \\
         ${args}
 
-    parse_metrics.py "${samplesheet}" qc_metrics_unified_all.tsv
+    parse_metrics.py "${samplesheet}" qc_metrics_unified_all.tsv "${multiqc_data_dir}"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

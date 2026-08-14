@@ -33,19 +33,19 @@ concepts:
         tool: mosdepth_coverage
     title: "Mean Coverage"
 
-  # SAMBAMBA / SAMTOOLS FLAGSTAT
-  flagstat.reads_mapped:
+  # SAMTOOLS STATS
+  samtools.reads_mapped:
     sources:
-      - anchor: samtools-flagstat-table
-        metric: mapped_passed
-        section_key: samtools-flagstat-table_table
-        tool: samtools
+      - anchor: general_stats_table
+        metric: reads_mapped
+        section_key: samtools
+        tool: samtools_stats
     title: "Reads Mapped"
-  flagstat.reads_duplicated:
+  samtools.reads_duplicated:
     sources:
-      - anchor: samtools-flagstat-table
-        metric: duplicates_passed
-        section_key: samtools-flagstat-table_table
+      - anchor: samtools-stats-dp
+        metric: reads_duplicated
+        section_key: samtools-stats-dp_table
         tool: samtools
     title: "Reads Duplicated"
 

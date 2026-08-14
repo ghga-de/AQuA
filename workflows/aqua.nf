@@ -32,6 +32,7 @@ def get_tool_list(param) {
 workflow AQUA {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet_csv // channel: raw csv file
 
     main:
 
@@ -200,32 +201,6 @@ workflow AQUA {
     )
 
     if (params.concepts_yaml) {
-        
-        ch_samplesheet_csv = ch_samplesheet
-            .map { row ->
-                def meta = row[0]
-                def sample = meta.id ?: ''
-                def file1 = row.size() > 1 ? row[1] : null
-                def file2 = row.size() > 2 ? row[2] : null
-
-                def fq1  = (file1 && file1.name =~ /\.fastq\.gz$|\.fq\.gz$/) ? file1.toString() : ''
-                def bam_f = (file1 && file1.name =~ /\.bam$/) ? file1.toString() : (file2 && file2.name =~ /\.bam$/) ? file2.toString() : ''
-                def cram_f = (file1 && file1.name =~ /\.cram$/) ? file1.toString() : (file2 && file2.name =~ /\.cram$/) ? file2.toString() : ''
-                def vcf_f = (file1 && file1.name =~ /\.vcf(\.gz)?$/) ? file1.toString() : (file2 && file2.name =~ /\.vcf(\.gz)?$/) ? file2.toString() : ''
-
-                return "${sample},${fq1},${bam_f},${cram_f},${vcf_f}"
-            }
-            .toSortedList()
-            .map { rows ->
-                def header = "sample,fastq_1,bam,cram,vcf"
-                // Join the header and rows into one single string
-                return ([header] + rows).join('\n')
-            }
-            .collectFile(
-                name: 'samplesheet.csv',
-                newLine: true
-            )
-
         MULTIQCMAPPER(
             MULTIQC.out.data,
             file(params.concepts_yaml),

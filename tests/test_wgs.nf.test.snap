@@ -177,18 +177,18 @@
                 "mosdepth_perchrom.txt:md5,b7f04056aa5fa20bd8c390e4555c2d4b",
                 "multiqc_citations.txt:md5,1a4b7bba1670272e67823b3c02466656",
                 "multiqc_fastp.txt:md5,b7efbf74ae3a00735d8d14e1fd4b7107",
-                "multiqc_general_stats.txt:md5,af6e1064172417814f92d9ba7a66b57c",
+                "multiqc_general_stats.txt:md5,196559c04910fd7411049eff2b5a8742",
                 "multiqc_samtools_stats.txt:md5,fab20ac7c966caeffbab5cca1532da5d",
                 "samtools-stats-dp.txt:md5,ebeb88271bc74659ce6f26e9f05b2758",
                 "samtools_alignment_plot.txt:md5,3030dda702f9d8e1810234437fbe4402",
-                "qc_metrics_unified.tsv:md5,f6580d521c20f97912c6a2170c0eaed2",
-                "test.fastp.html:md5,9c09527ba626ee1f485e76c316f5075c",
+                "qc_metrics_unified.tsv:md5,4cef3493e46c2bf4df3431aa1b8c32a2",
+                "test.fastp.html:md5,11b0aaaab399de6cb96fe6876b09c13d",
                 "test.fastp.json:md5,c5433aaf54b5aa7b2faa10ed22f65fde",
                 "test.fastp.log:md5,a84e4c8eff3eda6e55d6eb8e4d8ee186",
                 "test.mosdepth.global.dist.txt:md5,e82e90c7d508a135b5a8a7cd6933452e",
                 "test.mosdepth.summary.txt:md5,4f0d231060cbde4efdd673863bd2fb59",
                 "test.stats:md5,a15b3a5e59337db312d66020c7bb93ac",
-                "test2.fastp.html:md5,8320cdb2c3199a892bcb2643a7c13026",
+                "test2.fastp.html:md5,70dd4ba82ea8d751841594cdb63c0e44",
                 "test2.fastp.json:md5,713d7b9e81edec8106a9449a673dc42f",
                 "test2.fastp.log:md5,541b17ca61df413efa8e840b11370f7f",
                 "test2.mosdepth.global.dist.txt:md5,ba97ed85645f77da6f3adad138b3cdb4",
@@ -202,7 +202,7 @@
                 "test_cram.stats:md5,bcc229318527e414e69aaa5cd092ad9b"
             ]
         ],
-        "timestamp": "2026-08-13T16:52:27.194058362",
+        "timestamp": "2026-08-14T11:01:37.112683436",
         "meta": {
             "nf-test": "0.9.4",
             "nextflow": "25.10.4"
