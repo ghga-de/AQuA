@@ -10,6 +10,7 @@ process MULTIQCMAPPER {
     input:
     path multiqc_data_dir
     path concepts_yaml
+    path samplesheet
 
     output:
     path "*unified.tsv",  emit: unified
@@ -28,7 +29,7 @@ process MULTIQCMAPPER {
         --format tsv \\
         ${args}
 
-    awk -F'\\t' '\$2 != ""' qc_metrics_unified_all.tsv > qc_metrics_unified.tsv
+    parse_metrics.py "${samplesheet}" qc_metrics_unified_all.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
