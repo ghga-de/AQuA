@@ -135,7 +135,7 @@ workflow STEP2 {
         ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.global_txt.map { _meta, file -> file }.collect())
         ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.regions_txt.map { _meta, file -> file }.collect())
         ch_multiqc_files = ch_multiqc_files.mix(MOSDEPTH.out.summary_txt.map { _meta, file -> file }.collect())
-     
+
         ch_versions = ch_versions.mix(MOSDEPTH.out.versions)
     }
 

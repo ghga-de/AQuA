@@ -43,7 +43,7 @@ samples_data = list(merged_samples.values())
 
 def get_file_for_sample(row_data, mqc_samp, tool_name):
     t_lower = tool_name.lower()
-    
+
     # Determine the priority file types based on the tool
     if 'fastp' in t_lower or 'nanostat' in t_lower or 'fastqc' in t_lower:
         priorities = ['fastq_1', 'fastq_2']
@@ -59,34 +59,34 @@ def get_file_for_sample(row_data, mqc_samp, tool_name):
         val = row_data.get(key, '')
         if val and (mqc_samp in val or val in mqc_samp):
             return val
-            
+
     # Step B: If no string match, return the first available priority file for this tool
     for key in priorities:
         val = row_data.get(key, '')
         if val:
             return val
-            
+
     # Step C: Absolute fallback if tool priorities fail
     for key in ['fastq_1', 'bam', 'cram', 'vcf']:
         if row_data.get(key):
             return row_data[key]
-            
+
     return ""
 
 # 3. Process the MultiQC Data
 with open(unified_all_path, mode='r', encoding='utf-8') as fin, \
      open('qc_metrics_unified.tsv', mode='w', encoding='utf-8', newline='') as fout:
-    
+
     writer = csv.writer(fout, delimiter='\t')
     writer.writerow(['sample', 'file', 'tool', 'tool_version', 'qc_metrics', 'definition', 'value'])
 
     reader = csv.DictReader(fin, delimiter='\t')
-    
+
     for row in reader:
         concept = row.get('concept', '').strip()
         if not concept:
             continue
-            
+
         mqc_samp = row.get('sample', '').strip()
         tool = row.get('tool', '').strip()
         metric = row.get('metric', '').strip()
@@ -95,14 +95,14 @@ with open(unified_all_path, mode='r', encoding='utf-8') as fin, \
 
         input_file = ""
         real_sample_name = mqc_samp
-        
+
         # Match Sample ID to File path
         for s in samples_data:
             if s['sample'] == mqc_samp:
                 real_sample_name = s['sample']
                 input_file = get_file_for_sample(s, mqc_samp, tool)
                 break
-                
+
         if not input_file:
             sorted_samples = sorted(samples_data, key=lambda x: len(x['sample']), reverse=True)
             for s in sorted_samples:
@@ -110,7 +110,7 @@ with open(unified_all_path, mode='r', encoding='utf-8') as fin, \
                     real_sample_name = s['sample']
                     input_file = get_file_for_sample(s, mqc_samp, tool)
                     break
-                    
+
                 for key in ['fastq_1', 'fastq_2', 'bam', 'cram', 'vcf']:
                     val = s.get(key, '')
                     if val and (mqc_samp in val or val in mqc_samp):
@@ -124,10 +124,10 @@ with open(unified_all_path, mode='r', encoding='utf-8') as fin, \
         t_lower = tool.lower()
         base_tool = t_lower.split('_')[0]
         version = tool_versions.get(t_lower, "")
-        
+
         if not version:
             version = tool_versions.get(base_tool, "")
-            
+
         if not version:
             for v_tool, v_ver in tool_versions.items():
                 if t_lower in v_tool or v_tool in t_lower or base_tool in v_tool:

@@ -9,10 +9,10 @@ concepts:
         section_key: fastp
         tool: fastp
     title: "Total Reads"
-  fastp.q20_rate: 
+  fastp.q20_rate:
     sources:
       - anchor: general_stats_table
-        metric: after_filtering_q20_rate 
+        metric: after_filtering_q20_rate
         section_key: fastp
         tool: fastp
     title: "Q20 Rate"
