@@ -21,7 +21,9 @@
 2. Aligned BAM/CRAM files
 3. Variant called VCF/BCF files
 
-The pipeline automatically selects the appropriate quality control tools based on your provided analysis method (e.g., WGS, RNA-Seq, Nanopore) and compiles the results into a single MultiQC report.
+By default the pipeline is streamlined to strictly run a minimal set of tools. This ensures rapid generation of the essential metrics required to fulfill the GHGA metadata requirements. It is designed to take a GHGA formatted JSON metadata file and generate a single compiled TSV file containing these precise metrics.
+
+Users who need a more comprehensive analysis can still access the full suite of available quality control tools. By using the `--analysis_tools` parameter you can populate the pipeline with specialized tools and generate a rich MultiQC report for detailed visual exploration.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/metromap.svg">
@@ -30,22 +32,47 @@ The pipeline automatically selects the appropriate quality control tools based o
 
 ## Tool & Analysis Matrix
 
-The following table details which tools are executed based on the analysis method and input data type provided in the samplesheet.
+## Default GHGA Quality Control Metrics
 
-| Analysis Method     | Read QC (FastQ)                | Alignment QC (BAM)                                                               | Variant QC (VCF) |
-| :------------------ | :----------------------------- | :------------------------------------------------------------------------------- | :--------------- |
-| **WGS**             | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats, VerifyBamID, _NGSBits_, Preseq | _BCFTools Stats_ |
-| **WES / TES**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats, Preseq                         | _BCFTools Stats_ |
-| **ATAC Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, _Ataqv_, Samtools Stats, Preseq                |                  |
-| **ChIP Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_,_Sambamba flagstats_,_Phantompeakqualtools_, Samtools Stats, Preseq   |                  |
-| **RNA Seq / smRNA** | FastQC, SeqFU                  | _Samtools Stats_, _RSeQC_, Preseq                                                | _BCFTools Stats_ |
-| **Nanopore**        | _FastPLong_, _NanoPlot_, SeqFU | _Mosdepth_, _Sambamba flagstats_, _Cramino_, Samtools Stats                      | _BCFTools Stats_ |
-| **PacBio**          | _FastPLong_, _NanoPlot_        | _Mosdepth_, _Cramino_, _Sambamba flagstats_, Samtools Stats                      | _BCFTools Stats_ |
-| **MethylSeq**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, MethylDackel, _Sambamba flagstats_, Samtools Stats                   |                  |
-| **cfDNA / Other**   | _FastP_, FastQC, SeqFU         | _Mosdepth_, _Sambamba flagstats_, Samtools Stats                                 | _BCFTools Stats_ |
+When run in its default state the pipeline outputs a unified TSV file containing the specific metrics listed below. The exact tool used depends on the data format and the analysis type provided.
+
+| Data Type                 | Analysis Types                              | Tool           | QC Metrics                           |
+| :------------------------ | :------------------------------------------ | :------------- | :----------------------------------- |
+| **Raw (FASTQ.GZ)**        | WGS, WES, WXS, RNA, ATAC, METHYLATION, CHIP | FASTP          | total_reads, q20_rate, gc_content    |
+| **Raw (FASTQ.GZ)**        | PACBIO, NANOPORE                            | FASTPLONG      | total_reads, q20_rate, gc_content    |
+| **Processed (BAM, CRAM)** | ALL                                         | MOSDEPTH       | mean_coverage                        |
+| **Processed (BAM, CRAM)** | ALL                                         | SAMTOOLS STATS | reads_mapped, reads_duplicated       |
+| **Other (VCF, BCF)**      | ALL                                         | BCFTOOLS STATS | number_of_samples, number_of_records |
+
+### Metric Definitions
+
+- **total_reads**: The total count of sequences present in the file. (Integer)
+- **q20_rate**: The fraction of bases achieving a quality score of 20 or above after filtration. (Float)
+- **gc_content**: The proportion of bases that are guanine or cytosine. (Float)
+- **mean_coverage**: The average number of times each base in the reference genome is sequenced. (Float)
+- **reads_mapped**: The total number of reads that successfully aligned to the reference sequence. (Integer)
+- **reads_duplicated**: The total number of reads marked as identical optical or polymerase chain reaction duplicates. (Integer)
+- **number_of_samples**: The total count of distinct biological samples present in the file. (Integer)
+- **number_of_records**: The total count of variant lines contained in the file. (Integer)
+
+## Extended Tool and Analysis Matrix
+
+For advanced users the following table details the extended tools available for different analysis methods. Tools in _Italic_ represent the default paths but you can customize the execution by adding tools with `--analysis_tools` or removing defaults with `--skip_tools`.
+
+| Analysis Method     | Read QC (FastQ)                | Alignment QC (BAM)                                                             | Variant QC (VCF) |
+| :------------------ | :----------------------------- | :----------------------------------------------------------------------------- | :--------------- |
+| **WGS**             | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_, VerifyBamID, NGSBits, Preseq | _BCFTools Stats_ |
+| **WES / TES**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_, Preseq                       | _BCFTools Stats_ |
+| **ATAC Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, Ataqv, _Samtools Stats_, Preseq                |                  |
+| **ChIP Seq**        | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, Phantompeakqualtools, _Samtools Stats_, Preseq |                  |
+| **RNA Seq / smRNA** | FastQC, SeqFU                  | _Samtools Stats_, RSeQC, Preseq                                                | _BCFTools Stats_ |
+| **Nanopore**        | _FastPLong_, _NanoPlot_, SeqFU | _Mosdepth_, Sambamba flagstats, Cramino, _Samtools Stats_                      | _BCFTools Stats_ |
+| **PacBio**          | _FastPLong_, _NanoPlot_        | _Mosdepth_, Cramino, Sambamba flagstats, _Samtools Stats_                      | _BCFTools Stats_ |
+| **MethylSeq**       | _FastP_, FastQC, SeqFU         | _Mosdepth_, MethylDackel, Sambamba flagstats, _Samtools Stats_                 |                  |
+| **cfDNA / Other**   | _FastP_, FastQC, SeqFU         | _Mosdepth_, Sambamba flagstats, _Samtools Stats_                               | _BCFTools Stats_ |
 
 > [!NOTE]
-> Tools in _Italic_ are used as default, yet user can add tools to the analysis uisng --analysis_tools or remove default using --skip_tools. In the case of CRAM files, instead of sambamba flagstats, samtools stats is used default.
+> Tools in _Italic_ are used as default, yet user can add tools to the analysis uisng --analysis_tools or remove default using --skip_tools.
 
 ## Usage
 

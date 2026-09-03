@@ -32,6 +32,7 @@ def get_tool_list(param) {
 workflow AQUA {
     take:
     ch_samplesheet // channel: samplesheet read in from --input
+    ch_samplesheet_csv // channel: raw csv file
 
     main:
 
@@ -67,7 +68,7 @@ workflow AQUA {
         }
         .set { samplesheet }
 
-    def default_tools = ['fastp', 'fastplong', 'mosdepth', 'sambamba_flagstat', 'ngsbits_samplegender', 'ataqv', 'phantompeakqual', 'rseqc', 'nanoplot', 'bcftools_stats']
+    def default_tools = ['fastp', 'fastplong', 'mosdepth', 'samtools_stats','bcftools_stats']
     def skipped_tools = get_tool_list(params.skip_tools)
     def add_tools     = get_tool_list(params.analysis_tools)
 
@@ -203,6 +204,7 @@ workflow AQUA {
         MULTIQCMAPPER(
             MULTIQC.out.data,
             file(params.concepts_yaml),
+            ch_samplesheet_csv
         )
         ch_versions = ch_versions.mix(MULTIQCMAPPER.out.versions)
     }

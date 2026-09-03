@@ -56,7 +56,8 @@ workflow {
     // WORKFLOW: Run main workflow
     //
     GHGA_AQUA(
-        PIPELINE_INITIALISATION.out.samplesheet
+        PIPELINE_INITIALISATION.out.samplesheet,
+        ch_input // raw samplesheet CSV
     )
     //
     // SUBWORKFLOW: Run completion tasks
@@ -83,6 +84,7 @@ workflow {
 workflow GHGA_AQUA {
     take:
     samplesheet // channel: samplesheet read in from --input
+    samplesheet_csv // channel: raw csv file
 
     main:
 
@@ -90,7 +92,8 @@ workflow GHGA_AQUA {
     // WORKFLOW: Run pipeline
     //
     AQUA(
-        samplesheet
+        samplesheet,
+        samplesheet_csv
     )
 
     emit:

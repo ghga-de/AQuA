@@ -1,0 +1,66 @@
+version: "1.0"
+note: "Trimmed concepts to only include targeted GHGA QC metrics"
+concepts:
+  # FASTP & FASTPLONG
+  fastp.total_reads:
+    sources:
+      - anchor: general_stats_table
+        metric: filtering_result_passed_filter_reads
+        section_key: fastp
+        tool: fastp
+    title: "Total Reads"
+  fastp.q20_rate:
+    sources:
+      - anchor: general_stats_table
+        metric: after_filtering_q20_rate
+        section_key: fastp
+        tool: fastp
+    title: "Q20 Rate"
+  fastp.gc_content:
+    sources:
+      - anchor: general_stats_table
+        metric: after_filtering_gc_content
+        section_key: fastp
+        tool: fastp
+    title: "GC Content"
+
+  # MOSDEPTH
+  mosdepth.mean_coverage:
+    sources:
+      - anchor: general_stats_table
+        metric: mean_coverage
+        section_key: mosdepth
+        tool: mosdepth_coverage
+    title: "Mean Coverage"
+
+  # SAMTOOLS STATS
+  samtools.reads_mapped:
+    sources:
+      - anchor: general_stats_table
+        metric: reads_mapped
+        section_key: samtools
+        tool: samtools_stats
+    title: "Reads Mapped"
+  samtools.reads_duplicated:
+    sources:
+      - anchor: samtools-stats-dp
+        metric: reads_duplicated
+        section_key: samtools-stats-dp_table
+        tool: samtools
+    title: "Reads Duplicated"
+
+  # BCFTOOLS
+  bcftools.number_of_records:
+    sources:
+      - anchor: general_stats_table
+        metric: number_of_records
+        section_key: bcftools
+        tool: bcftools_stats
+    title: "Number of Records"
+  bcftools.number_of_samples:
+    sources:
+      - anchor: general_stats_table
+        metric: number_of_samples
+        section_key: bcftools
+        tool: bcftools_stats
+    title: "Number of Samples"
